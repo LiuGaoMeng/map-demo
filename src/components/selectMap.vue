@@ -273,11 +273,6 @@ export default {
 
         })
         bus.$on('mapPicHander',(type)=>{
-            if(type!='pointDraw'&&type!='clearXY'&&type!='cleardraw'&&type!='closeDraw'&&
-            type!='stopDraw'&&type!='openUpdate'&&type!='closeUpdate'){
-                debugger
-                this.map.on('pointermove',this.pointerMove())
-            }
             switch(type){
                 case 'pointDraw':
                     //点
@@ -386,6 +381,7 @@ export default {
                     this.map.removeInteraction(this.modify)
                     break
             }
+           
             /**
              * 几何图形
              */
@@ -394,7 +390,16 @@ export default {
                     this.snap=new Snap({
                         source:this.drawSource
                 })
-                this.map.addInteraction(this.snap)    
+                this.map.addInteraction(this.snap)  
+                 this.draw.on('drawstart', function (evt) {
+                // set sketch
+                debugger
+                this.sketch = evt.feature
+                 this.helpTooltipElement.innerHTML ='点击Esc取消绘画';
+                    this.helpTooltip.setPosition(evt.coordinate);
+                    this.helpTooltipElement.classList.remove('hidden')
+            })
+
             }
         })
          bus.$on('mapInfo',(type)=>{
@@ -554,7 +559,22 @@ export default {
             this.map.on('singleclick',(e)=>{
 
             })
+            /**
+             * 
+             */
+            //  this.map.on('pointermove',(evt)=>{   
+            //     if(evt.dragging){
+            //         return
+            //     }
+            //     if(this.sketch){
+            //         debugger
+            //         this.helpTooltipElement.innerHTML ='点击Esc取消绘画';
+            //         this.helpTooltip.setPosition(evt.coordinate);
+            //         this.helpTooltipElement.classList.remove('hidden')
 
+            //     }
+            //  })
+            
             /**
              * 初始化绘画图层
              */
@@ -828,21 +848,21 @@ export default {
             if(evt.dragging){
                 return
             }
-            if(sketch){
-                helpTooltipElement.innerHTML ='点击Esc取消绘画';
-                helpTooltip.setPosition(evt.coordinate);
-                helpTooltipElement.classList.remove('hidden')
+            if(this.sketch){
+                this.helpTooltipElement.innerHTML ='点击Esc取消绘画';
+                this.helpTooltip.setPosition(evt.coordinate);
+                this.helpTooltipElement.classList.remove('hidden')
 
             }
         },
         createHelpTooltip(){
-            debugger
+            
             if(this.helpTooltipElement){
                 this.helpTooltipElement.parentNode.removeChild(this.helpTooltipElement)
             }
             this.helpTooltipElement=document.createElement('div')
             this.helpTooltipElement.className='ol-tooltip hidden'
-            helpTooltip=new Overlay({
+            this.helpTooltip=new Overlay({
                 element:this.helpTooltipElement,
                 offset:[15,0],
                 positioning:'center-left'
