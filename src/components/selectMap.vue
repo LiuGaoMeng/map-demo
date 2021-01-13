@@ -42,6 +42,7 @@ import MapTool from "../views/MapTool"
 import {getRenderPixel} from 'ol/render'
 import Feature from 'ol/Feature'
 import jsPDF from 'jspdf'
+import Overlay from 'ol/Overlay'
 import {Point,LineString,Polygon,Circle as CirCle } from 'ol/geom'
 import {fromCircle,fromExtent} from 'ol/geom/Polygon'
 import geomCirCle from 'ol/geom/Circle'
@@ -66,6 +67,9 @@ export default {
             layerVisibility:[],
             map:null,
             modify:null,
+            helpTooltipElement:null,
+            helpTooltip:null,
+            sketch:null,
             tdtMap_vec:null,
             tdtMap_img:null,
             drawSource:null,
@@ -269,32 +273,11 @@ export default {
 
         })
         bus.$on('mapPicHander',(type)=>{
-            //  let vecLayerXY=new VectorLayer()
-              /**
-               * 画几何图形
-               */
-             
-            //  let drawSource=new VectorSource()
-            //  let drawLayer=new VectorLayer({
-            //      source:drawSource,
-            //      style:new Style({
-            //          fill: new Fill({
-            //             color: 'rgba(255, 255, 255, 0.2)',
-            //         }),
-            //         stroke: new Stroke({
-            //             color: 'black',
-            //             width: 2,
-            //         }),
-            //         image: new Circle({
-            //             radius: 7,
-            //             fill: new Fill({
-            //                 color: 'black',
-            //             })
-            //         })
-            //      })
-            //  })
-            //  let modify=new Modify({source:this.drawSource})
-            //  this.map.addInteraction(modify)
+            if(type!='pointDraw'&&type!='clearXY'&&type!='cleardraw'&&type!='closeDraw'&&
+            type!='stopDraw'&&type!='openUpdate'&&type!='closeUpdate'){
+                debugger
+                this.map.on('pointermove',this.pointerMove())
+            }
             switch(type){
                 case 'pointDraw':
                     //点
@@ -322,7 +305,6 @@ export default {
                     this.vecLayerXY.setSource(vecSource)
                     break;
                 case 'clearXY':
-                    
                     this.vecLayerXY.getSource().clear()
                     break
                 case 'drawPoint':
@@ -392,11 +374,7 @@ export default {
                     break
                 case 'stopDraw':
                     if(this.draw!=null){
-                        $(document).keyup((event)=>{
-                            let c=event.keyCode
-                            debugger
-                        })
-
+                       this.draw.abortDrawing()
                     }
                     break
                 case 'openUpdate':
@@ -416,13 +394,8 @@ export default {
                     this.snap=new Snap({
                         source:this.drawSource
                 })
-                this.map.addInteraction(this.snap)
-                //  this.map.addLayer(this.drawLayer)
-               
-                
+                this.map.addInteraction(this.snap)    
             }
-            
-            //  this.map.addLayer(this.vecLayerXY)
         })
          bus.$on('mapInfo',(type)=>{
              switch(type){
@@ -454,16 +427,22 @@ export default {
                     break
             }
         })
-    
-    
-    
-    bus.$on('removeInteraction',(type)=>{
-         if(this.draw!=null&&this.snap!=null&&this.modify!=null){
-             this.map.removeInteraction(this.draw)
-             this.map.removeInteraction(this.snap)
-            }
+        bus.$on('removeInteraction',(type)=>{
+            if(this.draw!=null&&this.snap!=null&&this.modify!=null){
+                this.map.removeInteraction(this.draw)
+                this.map.removeInteraction(this.snap)
+                }
 
-    })
+        })
+        /**
+         * 点击eas取消绘画
+         */
+        document.onkeyup=function(e){
+            var key = window.event.keyCode
+            if(key==27){
+                bus.$emit('mapPicHander','stopDraw')
+            }
+        }
     },
     beforeDestroy() {
         bus.$off("mapHander")
@@ -471,153 +450,149 @@ export default {
         bus.$off("mapInfo")
   },
     mounted(){
-        this.initMap()
+        this.initMap() 
     },
-    // watch:{
-    //     type:function (newQuestion, oldQuestion) {
-    //         debugger
-           
-    //          this.map.removeInteraction(this.draw)
-    //         this.map.removeInteraction(this.snap)
-    //         this.map.addInteraction()
-    //     }
-    // },
     methods: {
       initMap(){
-        /*
-         * 比例尺dd
-         */
-        var scaleLineControl= new ScaleLine({
-            // className: 'my-scale-line',
-            bar: true,
-            // text: true,
-            minWidth:70,
-            units: "metric"
-        })
-        /**
-         * 鼠标移动获取位置信息
-         */
-        var mousePositionControl = new MousePosition({
-            //坐标格式
-            coordinateFormat: createStringXY(4),
-            //地图投影坐标系（若未设置则输出为默认投影坐标系下的坐标）
-            projection: 'EPSG:2435',
-            //坐标信息显示样式类名，默认是'ol-mouse-position'
-            className: 'custom-mouse-position',
-            //显示鼠标位置信息的目标容器
-            // target: document.getElementById('mouse-position'),
-            //未定义坐标的标记
-            undefinedHTML: '&nbsp;'
-        })
-        var tdtMap_cia=new TileLayer({
-            name:'天地图影像标记层',
-            
-            source:new XYZ({
-                url: "http://t0.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04",//parent.TiandituKey()为天地图密钥,
-                crossOrigin: 'anonymous',
-                wrapX: false
-            }),
-            visible:false
-        })
-        this.tdtMap_vec=new TileLayer({
-            name:'天地图矢量图层',
-            
-            source: new XYZ({
-                url:"http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04",
-                crossOrigin: 'anonymous',
-                wrapX:false
+            /*
+            * 比例尺dd
+            */
+            var scaleLineControl= new ScaleLine({
+                // className: 'my-scale-line',
+                bar: true,
+                // text: true,
+                minWidth:70,
+                units: "metric"
             })
-        })
-        var tdtMap_cva=new TileLayer({
-            name:'天地图矢量标记图层',
-            source:new XYZ({
-                url:'http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04',
-                crossOrigin: 'anonymous',
-                wrapX:false
-            }),
-            
-        })
-        this.tdtMap_img=new TileLayer({
-            name:'天地图影像图层',
-            source:new XYZ({
-                url:'http://t0.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04',
-                crossOrigin: 'anonymous',
-                wrapX:false
-            }),
-            visible:false
-        })
-             /**
-         * 鹰眼
-         */
-        var overviewMap = new OverviewMap({
-            className: 'ol-overviewmap ol-custom-overviewmap',
-            layers: [new TileLayer({
+            /**
+             * 鼠标移动获取位置信息
+             */
+            var mousePositionControl = new MousePosition({
+                //坐标格式
+                coordinateFormat: createStringXY(4),
+                //地图投影坐标系（若未设置则输出为默认投影坐标系下的坐标）
+                projection: 'EPSG:2435',
+                //坐标信息显示样式类名，默认是'ol-mouse-position'
+                className: 'custom-mouse-position',
+                //显示鼠标位置信息的目标容器
+                // target: document.getElementById('mouse-position'),
+                //未定义坐标的标记
+                undefinedHTML: '&nbsp;'
+            })
+            var tdtMap_cia=new TileLayer({
+                name:'天地图影像标记层',
+                
+                source:new XYZ({
+                    url: "http://t0.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04",//parent.TiandituKey()为天地图密钥,
+                    crossOrigin: 'anonymous',
+                    wrapX: false
+                }),
+                visible:false
+            })
+            this.tdtMap_vec=new TileLayer({
+                name:'天地图矢量图层',
+                
+                source: new XYZ({
+                    url:"http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04",
+                    crossOrigin: 'anonymous',
+                    wrapX:false
+                })
+            })
+            var tdtMap_cva=new TileLayer({
                 name:'天地图矢量标记图层',
                 source:new XYZ({
                     url:'http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04',
+                    crossOrigin: 'anonymous',
+                    wrapX:false
+                }),
+                
+            })
+            this.tdtMap_img=new TileLayer({
+                name:'天地图影像图层',
+                source:new XYZ({
+                    url:'http://t0.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04',
+                    crossOrigin: 'anonymous',
                     wrapX:false
                 }),
                 visible:false
-            })],
-        })
-        //实例化Map对象
-        this.map= new Map({
-            target:'mapDiv',
-            layers:[this.tdtMap_vec,tdtMap_cva,this.tdtMap_img,tdtMap_cia],
-            view:new View({
-                //地图中心点
-                center:[12606072.0, 2650934.0],
-                // projection: 'EPSG:4326',
-                zoom:6
-            }),
-            controls:defaults({
-                attibuttonOptions:({
-                    collapsible: true
-                })
-            }).extend([mousePositionControl,overviewMap])
-        })
-        this.map.addControl(scaleLineControl);
-        this.loadLayersControl(this.map,'layerTree')
-        /**
-         * 图片点击事件
-         */
-        this.map.on('singleclick',(e)=>{
+            })
+                /**
+             * 鹰眼
+             */
+            var overviewMap = new OverviewMap({
+                className: 'ol-overviewmap ol-custom-overviewmap',
+                layers: [new TileLayer({
+                    name:'天地图影像图层',
+                    source:new XYZ({
+                        url:'http://t0.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04',
+                        crossOrigin: 'anonymous',
+                        wrapX:false
+                    }),
+                })],
+            })
+            //实例化Map对象
+            this.map= new Map({
+                target:'mapDiv',
+                layers:[this.tdtMap_vec,tdtMap_cva,this.tdtMap_img,tdtMap_cia],
+                view:new View({
+                    //地图中心点
+                    center:[12606072.0, 2650934.0],
+                    // projection: 'EPSG:4326',
+                    zoom:6
+                }),
+                controls:defaults({
+                    attibuttonOptions:({
+                        collapsible: true
+                    })
+                }).extend([mousePositionControl,overviewMap])
+            })
+            this.map.addControl(scaleLineControl);
+            this.loadLayersControl(this.map,'layerTree')
+            /**
+             * 图片点击事件
+             */
+            this.map.on('singleclick',(e)=>{
 
-        })
+            })
 
-        /**
-         * 初始化绘画图层
-         */
+            /**
+             * 初始化绘画图层
+             */
 
-        //绘画图层
-        this.drawSource=new VectorSource()
-        this.drawLayer=new VectorLayer({
-            source:this.drawSource,
-            style:new Style({
-                fill: new Fill({
-                color: 'rgba(255, 255, 255, 0.2)',
-            }),
-            stroke: new Stroke({
-                color: 'black',
-                width: 2,
-            }),
-            image: new Circle({
-                radius: 7,
-                fill: new Fill({
+            //绘画图层
+            this.drawSource=new VectorSource()
+            this.drawLayer=new VectorLayer({
+                source:this.drawSource,
+                style:new Style({
+                    fill: new Fill({
+                    color: 'rgba(255, 255, 255, 0.2)',
+                }),
+                stroke: new Stroke({
                     color: 'black',
+                    width: 2,
+                }),
+                image: new Circle({
+                    radius: 7,
+                    fill: new Fill({
+                        color: 'black',
+                    })
+                })
                 })
             })
-            })
-        })
-        //坐标图层
-        this.vecLayerXY=new VectorLayer()
-        this.map.addLayer(this.drawLayer)
-        this.map.addLayer(this.vecLayerXY)
-         /**
-          * 修改拖拽图层--绘画图层
-          */
-        this.modify=new Modify({source:this.drawSource})
-        this.map.addInteraction(this.modify)
+            //坐标图层
+            this.vecLayerXY=new VectorLayer()
+            this.map.addLayer(this.drawLayer)
+            this.map.addLayer(this.vecLayerXY)
+            /**
+             * 修改拖拽图层--绘画图层
+             */
+            this.modify=new Modify({source:this.drawSource})
+            this.map.addInteraction(this.modify)
+            /**
+             * 绘画提示框
+             */
+           
+            this.createHelpTooltip()
         },
         /**
          * 加载图层列表数据
@@ -847,6 +822,33 @@ export default {
             }))
             return triangle
 
+        },
+        pointerMove(evt){
+            debugger
+            if(evt.dragging){
+                return
+            }
+            if(sketch){
+                helpTooltipElement.innerHTML ='点击Esc取消绘画';
+                helpTooltip.setPosition(evt.coordinate);
+                helpTooltipElement.classList.remove('hidden')
+
+            }
+        },
+        createHelpTooltip(){
+            debugger
+            if(this.helpTooltipElement){
+                this.helpTooltipElement.parentNode.removeChild(this.helpTooltipElement)
+            }
+            this.helpTooltipElement=document.createElement('div')
+            this.helpTooltipElement.className='ol-tooltip hidden'
+            helpTooltip=new Overlay({
+                element:this.helpTooltipElement,
+                offset:[15,0],
+                positioning:'center-left'
+            })
+            this.map.addOverlay(this.helpTooltip)
+
         }
         
 
@@ -943,7 +945,40 @@ export default {
             top: 1px;
         }
       
-        /*=E 自定义鹰眼样式 */
+        /*提示框 */
+        .ol-tooltip {
+        position: relative;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        color: white;
+        padding: 4px 8px;
+        opacity: 0.7;
+        white-space: nowrap;
+        font-size: 12px;
+      }
+      .ol-tooltip-measure {
+        opacity: 1;
+        font-weight: bold;
+      }
+      .ol-tooltip-static {
+        background-color: #ffcc33;
+        color: black;
+        border: 1px solid white;
+      }
+      .ol-tooltip-measure:before,
+      .ol-tooltip-static:before {
+        border-top: 6px solid rgba(0, 0, 0, 0.5);
+        border-right: 6px solid transparent;
+        border-left: 6px solid transparent;
+        content: "";
+        position: absolute;
+        bottom: -6px;
+        margin-left: -7px;
+        left: 50%;
+      }
+      .ol-tooltip-static:before {
+        border-top-color: #ffcc33;
+      }
 
 
 </style>

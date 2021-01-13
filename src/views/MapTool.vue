@@ -31,13 +31,10 @@
                     <DropdownItem name='handLine'>画线</DropdownItem>
                     <DropdownItem name='handPolygon'>画面</DropdownItem>
                     <DropdownItem name='closeDraw'>关闭绘制</DropdownItem>
-                    <DropdownItem name='stopDraw'>停止绘制</DropdownItem>
+                    <DropdownItem name='stopDraw'>取消绘制</DropdownItem>
                     <DropdownItem name='cleardraw'>清除绘画图形</DropdownItem>
                     <DropdownItem name='openUpdate'>启动修改</DropdownItem>
                     <DropdownItem name='closeUpdate'>关闭修改</DropdownItem>
-                    
-
-                    
                 </DropdownMenu>
             </Dropdown>
             <Dropdown trigger="click" @on-click="mapInfo">
@@ -50,6 +47,15 @@
                     <DropdownItem name='union'>图文标注</DropdownItem>
                     <DropdownItem name='popup'>popup弹出</DropdownItem>
                     <DropdownItem name='merrage'>聚合标注</DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+            <Dropdown trigger="click" @on-click="shpCartoon">
+                <a href="javascript:void(0)">要素动画
+                    <Icon type='ios-arrow-down'></Icon>
+                </a>
+                <DropdownMenu slot="list">
+                    <DropdownItem name='shpCar'>要素动画</DropdownItem>
+                    <DropdownItem name='shpMove'>要素移动</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
              <Dropdown trigger="click" @on-click="mapTool">
@@ -91,6 +97,9 @@ export default {
         },
         mapTool(type){
             bus.$emit("mapTool",type)
+        },
+        shpCartoon(type){
+
         }
 
     }
