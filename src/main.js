@@ -4,7 +4,12 @@ import router from './router'
 import store from './store'
 import ViewUI from 'view-design'
 import bus from 'vue-bus'
+
 import 'view-design/dist/styles/iview.css'
+
+
+import * as ol from 'ol';
+Vue.prototype.$ol = ol;
 Vue.use(bus)
 Vue.use(ViewUI)
 
@@ -13,5 +18,6 @@ Vue.config.productionTip = false
 new Vue({
   router,
   store,
+
   render: h => h(App)
 }).$mount('#app')

@@ -30,7 +30,6 @@
 </template>
 <script>
 import"ol/ol.css"
-
 import Map from "ol/Map"
 import View from "ol/View"
 import TileLayer from "ol/layer/Tile"
@@ -70,6 +69,7 @@ export default {
             helpTooltipElement:null,
             helpTooltip:null,
             sketch:null,
+            drawFalg:false,
             tdtMap_vec:null,
             tdtMap_img:null,
             drawSource:null,
@@ -223,61 +223,41 @@ export default {
                         
                         mousePosition=this.map.getEventPixel(event)
                         map.render()
-                    })
-                    //   mapDiv.addEventListener('mousemove',mouseEvent(event,vm))
-                    
+                    })                    
                     mapDiv.addEventListener('mouseout',()=>{
                         mousePosition=null
                         map.render()
                     })
-                   
-
                     this.tdtMap_img.on('prerender',(event)=>{
-                        let ctx=event.context
-                        let pixelRadio=event.frameState.pixelRadio
+                        let ctx=event.context  //影像图层画布
+                        let pixelRadio=event.frameState.pixelRadio //像素比
                         ctx.save()
                         ctx.beginPath()
                         if(mousePosition){
                             let pixel=getRenderPixel(event,mousePosition)
                             let offset=getRenderPixel(event,[mousePosition[0]+radius,mousePosition[1]])
-                            let canvasRadius=Math.sqrt(Math.pow(offset[0]-pixel[0],2)+Math.pow(offset[1]-pixel[1],2))
-                            ctx.arc(pixel[0],pixel[1],canvasRadius,0,2*Math.PI)
+                            let canvasRadius=Math.sqrt(Math.pow(offset[0]-pixel[0],2)+Math.pow(offset[1]-pixel[1],2)) 
+                            ctx.arc(pixel[0],pixel[1],canvasRadius,0,2*Math.PI)//设置画布区为一个圆
                             ctx.lineWidth=(5*canvasRadius)/radius
-
-                            // ctx.arc(mousePosition[0]*pixelRadio,mousePosition[1]*pixelRadio,radius*pixelRadio,0,2*Math.PI)
-                            // ctx.lineWidth=5*pixelRadio
                             ctx.strokeStyle='rgb(0,0,0,0,5)'
                             ctx.stroke()
                         }
-                        ctx.clip()
+                        ctx.clip()//裁剪画布
                     })
-
                     this.tdtMap_img.on('postrender',(event)=>{
                         let ctx=event.context
-                        ctx.restore()
+                        ctx.restore() //还原画布
                     })
                     break;
                 case 'unwatch':
-                    let c=mapDiv
-                    
-                    mapDiv.removeEventListener('mousemove',mouseEvent())
-                     mapDiv.removeEventListener('mouseout',()=>{
-                       mousePosition=null
-                        map.render()
-                    })
-                    // this.tdtMap_img.un('prerender',this.renderCanvas())
-                    //  this.tdtMap_img.un('postrender')
+                   
 
             }
             
 
         })
         bus.$on('mapPicHander',(type)=>{
-            if(type!='pointDraw'&&type!='clearXY'&&type!='cleardraw'&&type!='closeDraw'&&
-            type!='stopDraw'&&type!='openUpdate'&&type!='closeUpdate'){
-                debugger
-                this.map.on('pointermove',this.pointerMove())
-            }
+            this.drawFalg=false
             switch(type){
                 case 'pointDraw':
                     //点
@@ -312,26 +292,28 @@ export default {
                         source:this.drawSource,
                         type:'Point'
                     })
+                    this.drawFalg=true
                     break;
                 case 'drawLine':
                     this.draw=new Draw({
                         source:this.drawSource,
                         type:'LineString'
                     })
-                    
+                     this.drawFalg=true
                     break;
                 case 'drawPolygon':
                      this.draw=new Draw({
                         source:this.drawSource,
                         type:'Polygon'
                     })
-                    
+                     this.drawFalg=true
                     break;
                 case 'drawCircle':
                     this.draw=new Draw({
                         source:this.drawSource,
                         type:'Circle'
                     })
+                     this.drawFalg=true
                     break;
                 case 'drawSquare':
                     this.draw=new Draw({
@@ -339,6 +321,7 @@ export default {
                         type:'Circle',
                         geometryFunction:createRegularPolygon(4)
                     })
+                     this.drawFalg=true
                     break;
                 case 'drawBox':
                     this.draw=new Draw({
@@ -346,6 +329,7 @@ export default {
                         type:'LineString',
                         geometryFunction:createBox()
                     })
+                     this.drawFalg=true
                     break;
                 case 'handLine':
                     this.draw=new Draw({
@@ -353,6 +337,7 @@ export default {
                         type:'LineString',
                         freehand:true
                     })
+                     this.drawFalg=true
                     break
                 case 'handPolygon':
                     this.draw=new Draw({
@@ -360,6 +345,7 @@ export default {
                         type:'Polygon',
                         freehand:true
                     })
+                     this.drawFalg=true
                     break
                 case 'cleardraw':
                     this.map.removeInteraction(this.draw)
@@ -371,6 +357,8 @@ export default {
                         this.map.removeInteraction(this.draw)
                         this.map.removeInteraction(this.snap)
                     }
+                    document.getElementsByClassName('ol-tooltip')[0].style.display = "none"
+                    //   this.helpTooltipElement.classList.add('hidden')
                     break
                 case 'stopDraw':
                     if(this.draw!=null){
@@ -389,15 +377,21 @@ export default {
             /**
              * 几何图形
              */
-            if(this.draw!=null&&type!='cleardraw'&&type!='closeDraw'&&type!='closeUpdate'){
+        if(this.draw!=null&&type!='cleardraw'&&type!='closeDraw'&&type!='closeUpdate'){
                 this.map.addInteraction(this.draw)
                     this.snap=new Snap({
                         source:this.drawSource
                 })
-                this.map.addInteraction(this.snap)    
+                this.map.addInteraction(this.snap)
+                this.draw.on('drawstart',(evt)=>{
+                    this.sketch = evt.feature 
+                }) 
+            }
+            if(this.drawFalg){
+                document.getElementsByClassName('ol-tooltip')[0].style.display ='block'
             }
         })
-         bus.$on('mapInfo',(type)=>{
+        bus.$on('mapInfo',(type)=>{
              switch(type){
                 case 'image':
 
@@ -454,6 +448,8 @@ export default {
     },
     methods: {
       initMap(){
+
+
             /*
             * 比例尺dd
             */
@@ -491,7 +487,6 @@ export default {
             })
             this.tdtMap_vec=new TileLayer({
                 name:'天地图矢量图层',
-                
                 source: new XYZ({
                     url:"http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04",
                     crossOrigin: 'anonymous',
@@ -537,7 +532,6 @@ export default {
                 view:new View({
                     //地图中心点
                     center:[12606072.0, 2650934.0],
-                    // projection: 'EPSG:4326',
                     zoom:6
                 }),
                 controls:defaults({
@@ -593,6 +587,16 @@ export default {
              */
            
             this.createHelpTooltip()
+             /**
+             * 绘画图层提示
+             */
+            this.map.on('pointermove',(evt)=>{
+                 if(this.sketch){
+                    this.helpTooltipElement.innerHTML ='点击Esc取消绘画';
+                    this.helpTooltip.setPosition(evt.coordinate);
+                    this.helpTooltipElement.classList.remove('hidden')
+                }
+            })
         },
         /**
          * 加载图层列表数据
@@ -823,32 +827,18 @@ export default {
             return triangle
 
         },
-        pointerMove(evt){
-            debugger
-            if(evt.dragging){
-                return
-            }
-            if(sketch){
-                helpTooltipElement.innerHTML ='点击Esc取消绘画';
-                helpTooltip.setPosition(evt.coordinate);
-                helpTooltipElement.classList.remove('hidden')
-
-            }
-        },
         createHelpTooltip(){
-            debugger
             if(this.helpTooltipElement){
                 this.helpTooltipElement.parentNode.removeChild(this.helpTooltipElement)
             }
             this.helpTooltipElement=document.createElement('div')
             this.helpTooltipElement.className='ol-tooltip hidden'
-            helpTooltip=new Overlay({
+            this.helpTooltip=new Overlay({
                 element:this.helpTooltipElement,
                 offset:[15,0],
                 positioning:'center-left'
             })
             this.map.addOverlay(this.helpTooltip)
-
         }
         
 
