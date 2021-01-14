@@ -51,6 +51,7 @@ import {Style,Fill,Stroke,Circle} from 'ol/style'
 import {Draw, Modify, Snap,Interaction} from 'ol/interaction'
 import {createRegularPolygon,createBox} from 'ol/interaction/Draw'
 import bus from "@/utils/bus"
+import ol from "@/utils/ol"
 export default {
     name:'selectMap',
     components: {
@@ -449,8 +450,6 @@ export default {
     },
     methods: {
       initMap(){
-
-
             /*
             * 比例尺dd
             */
