@@ -74,10 +74,14 @@ export default {
             tdtMap_vec:null,
             tdtMap_img:null,
             drawSource:null,
-            drawLayer:null,
+            drawLayer:null,//绘画图层
+            markLayer:null,//标注图层
+            markStyle:null,//标注样式
             vecLayerXY:null,
             a1:'a4',
+            // img:require('../assets/mark/location.png'),
             selectpdf:false,
+            markFalg:false,
             pageSize:[
                 {
                     name:'A1',
@@ -128,6 +132,7 @@ export default {
     created(){
         bus.$on('mapHander',(type)=>{
            var  vm=this
+           this.markFalg=false
             let map=this.map
              let view=this.map.getView();
              let mapDiv=this.$refs.mapDiv
@@ -259,6 +264,7 @@ export default {
         })
         bus.$on('mapPicHander',(type)=>{
             this.drawFalg=false
+            this.markFalg=false
             switch(type){
                 case 'pointDraw':
                     //点
@@ -379,7 +385,7 @@ export default {
             /**
              * 几何图形
              */
-        if(this.draw!=null&&type!='cleardraw'&&type!='closeDraw'&&type!='closeUpdate'){
+            if(this.draw!=null&&type!='cleardraw'&&type!='closeDraw'&&type!='closeUpdate'){
                 this.map.addInteraction(this.draw)
                     this.snap=new Snap({
                         source:this.drawSource
@@ -394,14 +400,75 @@ export default {
             }
         })
         bus.$on('mapInfo',(type)=>{
+            this.markFalg=true
              switch(type){
                 case 'image':
-
+                    this.markStyle=new ol.style.Style({
+                        image:new ol.style.Icon(
+                        ({
+                            anchor:[0.5,30],
+                            crossOrigin: 'anonymous',
+                            anchorOrigin: 'top-right',
+                            anchorXUnits: 'fraction',
+                            anchorYUnits: 'pixels',
+                            offsetOrigin: 'top-right',
+                            opacity:0.75,
+                            src:'static/location.png'
+                            // src:'../assets/mark/location.png'
+                        })
+                      )
+                    })
                     break;
                 case 'text':
+                    this.markStyle=new ol.style.Style({
+                        text:new ol.style.Text({
+                            // textAlign:'end',//位置
+                            // textBaseline:'middle',//基准线
+                            font:'normal 14px 微软雅黑',//文本样式
+                            text:'hello',//文本内容
+                            offsetY: 10,
+                            fill:new ol.style.Fill({
+                                color:'#aa3300'
+                            }),
+                            stroke:new ol.style.Stroke({
+                                color:'#ffcc33',
+                                width:2
+                            }),
+                            
+
+
+                        })
+                    })
                     
                     break;
                 case 'union':
+                    this.markStyle=new ol.style.Style({
+                        image:new ol.style.Icon(
+                            ({
+                                anchor:[0.5,30],
+                                crossOrigin: 'anonymous',
+                                anchorOrigin: 'top-right',
+                                anchorXUnits: 'fraction',
+                                anchorYUnits: 'pixels',
+                                offsetOrigin: 'top-right',
+                                opacity:0.75,
+                                src:'static/location.png'
+                            })
+                        ),
+                        text:new ol.style.Text({
+                            textAlign:'center',//位置
+                            textBaseline:'middle',//基准线
+                            font:'normal 14px 微软雅黑',//文本样式
+                            text:'hello',//文本内容
+                            fill:new ol.style.Fill({
+                                color:'#aa3300'
+                            }),
+                            stroke:new ol.style.Stroke({
+                                color:'#ffcc33',
+                                width:2
+                            })
+                        })
+                    })
                     
                     break;
                 case 'popup':
@@ -449,7 +516,8 @@ export default {
         this.initMap() 
     },
     methods: {
-      initMap(){
+        initMap(){
+            var vm=this
             /*
             * 比例尺dd
             */
@@ -546,24 +614,24 @@ export default {
              * 图片点击事件
              */
             this.map.on('singleclick',(e)=>{
-
             })
-            /**
-             * 
+            /***
+             * 地图双击事件
              */
-            //  this.map.on('pointermove',(evt)=>{   
-            //     if(evt.dragging){
-            //         return
-            //     }
-            //     if(this.sketch){
-            //         debugger
-            //         this.helpTooltipElement.innerHTML ='点击Esc取消绘画';
-            //         this.helpTooltip.setPosition(evt.coordinate);
-            //         this.helpTooltipElement.classList.remove('hidden')
+            this.map.on('click',(evt)=>{
+                debugger
+                let c=this.map
+                let feature=this.map.getFeaturesAtPixel(evt.pixel)
+                debugger
+                if(vm.markFalg){
+                    let featureSource=new ol.Feature({
+                        geometry:new ol.geom.Point(evt.coordinate)
+                    })
+                    featureSource.setStyle(vm.markStyle)
+                    vm.markLayer.getSource().addFeature(featureSource)
 
-            //     }
-            //  })
-            
+                }
+            })
             /**
              * 初始化绘画图层
              */
@@ -572,7 +640,8 @@ export default {
             this.drawSource=new VectorSource()
             this.drawLayer=new VectorLayer({
                 source:this.drawSource,
-                style:new Style({
+                style:new Style(
+                {
                     fill: new Fill({
                     color: 'rgba(255, 255, 255, 0.2)',
                 }),
@@ -612,6 +681,14 @@ export default {
                     this.helpTooltipElement.classList.remove('hidden')
                 }
             })
+            /**
+             * 标注图层
+             */
+            this.markLayer=new ol.layer.Vector({
+                source:new ol.source.Vector()
+            })
+            this.map.addLayer(this.markLayer)
+            
         },
         /**
          * 加载图层列表数据
@@ -854,11 +931,8 @@ export default {
                 positioning:'center-left'
             })
             this.map.addOverlay(this.helpTooltip)
-        }
-        
-
+        } 
     }
-
 }
 </script>
 <style lang="less" >

@@ -8,7 +8,8 @@ import {WFS,GeoJSON,} from 'ol/format'
 import {OSM,TileWMS,ImageWMS} from 'ol/source'
 import {Point,LineString,Circle as CirCle} from 'ol/geom'
 import {transform, fromLonLat, toLonLat} from 'ol/proj'
-import {Style,Fill,Stroke,Circle,Icon,Image as ImageStyle} from 'ol/style'
+import {unByKey} from 'ol/Observable'
+import {Style,Fill,Stroke,Text,Circle,Icon,Image as ImageStyle} from 'ol/style'
 import {defaults,ZoomToExtent,MousePosition,OverviewMap,ScaleLine} from 'ol/control'
 import { buffer } from 'ol/extent'
 
@@ -53,6 +54,7 @@ const ol = {
     Image: ImageStyle,
     Icon: Icon,
     Circle: Circle,
+    Text:Text
   },
   proj: {
     transform: transform,
@@ -61,6 +63,9 @@ const ol = {
   },
   extent: {
     buffer: buffer
+  },
+  Observable:{
+    unByKey:unByKey  //移除绑定三维on或者once事件
   }
 }
 
