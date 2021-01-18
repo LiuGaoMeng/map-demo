@@ -620,9 +620,17 @@ export default {
              */
             this.map.on('click',(evt)=>{
                 debugger
-                let c=this.map
+                let shpLayer=this.map
                 let feature=this.map.getFeaturesAtPixel(evt.pixel)
-                debugger
+                // let feature2=this.map.forEachFeatureAtPixel(evt.pixel,(feature,layer)=>{
+                //     debugger
+                //     let d=res
+                // })
+                // let feature3=this.map.forEachLayerAtPixel(evt.pixel,(fea)=>{
+                //     debugger
+                //     shpLayer=fea
+                // })
+              
                 if(vm.markFalg){
                     let featureSource=new ol.Feature({
                         geometry:new ol.geom.Point(evt.coordinate)
