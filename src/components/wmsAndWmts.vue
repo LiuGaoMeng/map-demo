@@ -149,6 +149,10 @@ export default {
                 debugger
                 document.getElementById('info').innerHTML = html;
             })
+            //接口获取数据--wms
+            axios.get(url).then(res=>{
+              debugger
+            })
             // if (url) {
             //     debugger
             //     document.getElementById('info').innerHTML =

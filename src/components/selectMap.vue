@@ -5,6 +5,14 @@
             <div class="title"><label>图层列表</label></div>
             <ul ref="layerTree" id="layerTree" class="layerTree"></ul>
         </div>
+
+          <!-- Popup -->
+        <div id="popup" ref='popup' class="ol-popup">
+            <a href="#" id="popup-closer" ref="popup-closer" class="ol-popup-closer"></a>
+            <div id="popup-content" ref="popup-content">
+            </div>
+        </div>
+
         <MapTool></MapTool>
         <Modal v-model='selectpdf' title="pdf选项" @on-ok='exportPdf' @on-cancel='cancelPdf' width="600">
             <Form>
@@ -77,6 +85,10 @@ export default {
             drawLayer:null,//绘画图层
             markLayer:null,//标注图层
             markStyle:null,//标注样式
+            container:null,
+            content:null,
+            close:null,
+            featuerInfo:null,
             vecLayerXY:null,
             a1:'a4',
             // img:require('../assets/mark/location.png'),
@@ -472,6 +484,67 @@ export default {
                     
                     break;
                 case 'popup':
+                    this.markStyle=new ol.style.Style({
+                        image:new ol.style.Icon(({
+                            anchor:[0.5,30],
+                            anchorOrigin:'top-right',
+                            anchorXUnits:'fractioon',
+                            anchorYUnits:'pixels',
+                            offsetOrigin:'top-right',
+                            opacity:0.75,
+                            src:'static/location.png'
+                        })),
+                        text:new ol.style.Text({
+                            textAlign:'center',//位置
+                            textBaseline:'middle',//基准线
+                            text:'hello',
+                            font:'normal 14px 微软雅黑',
+                            text:'',
+                            fill:new ol.style.Fill({
+                                color:'#aa3300'
+                            }),
+                            stroke:new ol.style.Stroke({
+                                color:'#ffcc33',
+                                width:2
+                            })
+
+                        })
+                    })
+                    this.featuerInfo={
+                        // geo: beijing,
+                        att: {
+                            //标注信息的标题内容
+                            title: "北京市(中华人民共和国首都)",
+                            //标注详细信息链接
+                            titleURL: "http://www.openlayers.org/",
+                            //标注内容简介
+                            text: "北京（Beijing），简称京，中华人民共和国首都、直辖市，中国的政治、文化和国际交往中心……",
+                            //标注的图片
+                            imgURL: "static/OIP.jpg"
+                        }
+                    }
+                    // this.container=document.getElementById('popup')
+                    // this.content=document.getElementById('popup-content')
+                    // this.close=document.getElementById('popup-closer')
+                    // let popup=new ol.Overlay(
+                    // ({
+                    //         element:this.container,//要转换成overlay的HTML元素
+                    //         autoPan:true,//当前窗口可见
+                    //         positioning:'bottom-center',//Popup放置位置
+                    //         stopEvent:false,
+                    //         autoPanAnimation:{
+                    //             //当Popup超出地图边界时，为了Popup全部可见，地图的移动速度
+                    //             duration:250
+                    //         }
+                    //     })
+                    // )
+                    // this.map.addOverlay(popup)
+                    // this.close.onclick(()=>{
+                    //     popup.setPosition(undefined)//未定义popup位置
+                    //     //失去焦点
+                    //     close.blur()
+                    //     return false
+                    // })
                     
                     break;
                 case 'merrage':
@@ -619,10 +692,18 @@ export default {
              * 地图双击事件
              */
             this.map.on('click',(evt)=>{
+                
+                // let feature=this.map.forEachFeatureAtPixel(evt.pixel,function (feature, layer) {
+                //     debugger
+                // })
                 debugger
-                let c=this.map
-                let feature=this.map.getFeaturesAtPixel(evt.pixel)
-                debugger
+                // var feature = this.map.forEachFeatureAtPixel(evt.pixel, function (feature, layer) { return feature; })
+                // if(feature){
+                    let content=this.content
+                    this.content.innerHTML=''
+                    this.addFeatureInfo(this.featuerInfo)
+
+                // }
                 if(vm.markFalg){
                     let featureSource=new ol.Feature({
                         geometry:new ol.geom.Point(evt.coordinate)
@@ -688,6 +769,31 @@ export default {
                 source:new ol.source.Vector()
             })
             this.map.addLayer(this.markLayer)
+            /**
+             * 弹出层
+             */
+            this.container=document.getElementById('popup')
+            this.content=document.getElementById('popup-content')
+            this.close=document.getElementById('popup-closer')
+            let popup=new ol.Overlay(
+            ({
+                    element:this.container,//要转换成overlay的HTML元素
+                    autoPan:true,//当前窗口可见
+                    positioning:'bottom-center',//Popup放置位置
+                    stopEvent:false,
+                    autoPanAnimation:{
+                        //当Popup超出地图边界时，为了Popup全部可见，地图的移动速度
+                        duration:250
+                    }
+                })
+            )
+            this.map.addOverlay(popup)
+            this.close.onclick=function(){
+                popup.setPosition(undefined)//未定义popup位置
+                //失去焦点
+                this.close.blur()
+                return false
+            }
             
         },
         /**
@@ -931,7 +1037,26 @@ export default {
                 positioning:'center-left'
             })
             this.map.addOverlay(this.helpTooltip)
-        } 
+        },
+        addFeatureInfo(info){
+            let elementA=document.createElement('a')
+            elementA.className='markerInfo'
+            elementA.href=info.att.titleURL
+            this.setInnerText(elementA,info.att.title)
+            this.content.appendChild(elementA)
+            let elementDiv=document.createElement('div')
+            elementDiv.className='markerText'
+            this.setInnerText(elementDiv,info.att.text)
+            this.content.appendChild(elementDiv)
+
+        },
+        // setInnerText(ele,text){
+        //     if(typeof ele.textContent=="string"){
+        //         ele.textContent=text
+        //     }else{
+        //         ele.innerText=text
+        //     }
+        // }
     }
 }
 </script>
@@ -989,7 +1114,7 @@ export default {
 }
 
 
-/*=S 自定义鹰眼样式 */
+        /*=S 自定义鹰眼样式 */
         // .ol-overviewmap {
         //     right: 0.5em;
         //     bottom: 0.5em;
@@ -1059,5 +1184,63 @@ export default {
         border-top-color: #ffcc33;
       }
 
+/**
+弹出框样式
+ */
+        .ol-popup {
+            position: absolute;
+            background-color: white;
+            -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 45px;
+            left: -50px;
+        }
+
+            .ol-popup:after, .ol-popup:before {
+                top: 100%;
+                border: solid transparent;
+                content: " ";
+                height: 0;
+                width: 0;
+                position: absolute;
+                pointer-events: none;
+            }
+
+            .ol-popup:after {
+                border-top-color: white;
+                border-width: 10px;
+                left: 48px;
+                margin-left: -10px;
+            }
+
+            .ol-popup:before {
+                border-top-color: #cccccc;
+                border-width: 11px;
+                left: 48px;
+                margin-left: -11px;
+            }
+
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 2px;
+            right: 8px;
+        }
+
+            .ol-popup-closer:after {
+                content: "✖";
+            }
+
+        #popup-content {
+            font-size: 14px;
+            font-family: "微软雅黑";
+        }
+
+            #popup-content .markerInfo {
+                font-weight: bold;
+            }
 
 </style>

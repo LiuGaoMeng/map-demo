@@ -110,6 +110,17 @@ export default {
                 })
             }).extend([mousePositionControl])
         });
+        map.on('click',(evt)=>{
+          //点击获取数据
+         let feature= map.getFeaturesAtPixel(evt.pixel)
+         debugger
+         if(feature.length>0){
+           alert(feature[0].getProperties().addr)
+         }else{
+           alert('请正确选择')
+         }
+         
+        })
     },
     
   }
