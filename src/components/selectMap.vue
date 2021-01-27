@@ -560,11 +560,11 @@ export default {
                     this.clustersSource.getSource().addFeatures(features)
                     this.map.getView().setCenter([-336989.1397,593087.8330])
                     this.map.getView().setZoom(4)
-                    let select=new ol.interaction.Select({
+                    let selectInteraction=new ol.interaction.Select({
                         condition: function (evt) {},
                         style: null,
                     })
-                    
+                    this.map.addInteraction(selectInteraction)
                     break;
             }
             
