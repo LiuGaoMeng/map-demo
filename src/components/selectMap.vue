@@ -85,6 +85,8 @@ export default {
             drawLayer:null,//绘画图层
             markLayer:null,//标注图层
             markStyle:null,//标注样式
+            clustersLayer:null,//聚合层
+            clustersSource:null,
             container:null,
             content:null,
             close:null,
@@ -549,6 +551,16 @@ export default {
                     break;
                 case 'merrage':
                     
+                    let e = 4500000
+                    let features = new Array(20000)
+                    for(let i=0;i<20000;++i){
+                        var coordinates = [2* e * Math.random()-e, 2 * e * Math.random() - e]
+                        features[i] = new ol.Feature(new ol.geom.Point(coordinates))
+                    }
+                    this.clustersSource.getSource().addFeatures(features)
+                    this.map.getView().setCenter([-336989.1397,593087.8330])
+                    this.map.getView().setZoom(4)
+                    
                     break;
             }
             
@@ -670,6 +682,14 @@ export default {
             this.map= new Map({
                 target:'mapDiv',
                 layers:[this.tdtMap_vec,tdtMap_cva,this.tdtMap_img,tdtMap_cia],
+                interactions: defaultInteractions().extend([
+                    // new ol.interaction.Select({
+                    //     condition: function (evt) {
+                    //         return evt.type == 'pointermove' || evt.type == 'singleclick';
+                    //     },
+                    //     style: selectStyleFunction,
+                    // }) 
+                ]),
                 view:new View({
                     //地图中心点
                     center:[12606072.0, 2650934.0],
@@ -697,20 +717,23 @@ export default {
                 //     debugger
                 // })
                 debugger
-                // var feature = this.map.forEachFeatureAtPixel(evt.pixel, function (feature, layer) { return feature; })
-                // if(feature){
-                    let content=this.content
-                    this.content.innerHTML=''
-                    this.addFeatureInfo(this.featuerInfo)
-
-                // }
+                let shpLayer=this.map
+                let feature=this.map.getFeaturesAtPixel(evt.pixel)
+                // let feature2=this.map.forEachFeatureAtPixel(evt.pixel,(feature,layer)=>{
+                //     debugger
+                //     let d=res
+                // })
+                // let feature3=this.map.forEachLayerAtPixel(evt.pixel,(fea)=>{
+                //     debugger
+                //     shpLayer=fea
+                // })
+              
                 if(vm.markFalg){
                     let featureSource=new ol.Feature({
                         geometry:new ol.geom.Point(evt.coordinate)
                     })
                     featureSource.setStyle(vm.markStyle)
                     vm.markLayer.getSource().addFeature(featureSource)
-
                 }
             })
             /**
@@ -776,7 +799,7 @@ export default {
             this.content=document.getElementById('popup-content')
             this.close=document.getElementById('popup-closer')
             let popup=new ol.Overlay(
-            ({
+                ({
                     element:this.container,//要转换成overlay的HTML元素
                     autoPan:true,//当前窗口可见
                     positioning:'bottom-center',//Popup放置位置
@@ -794,6 +817,46 @@ export default {
                 this.close.blur()
                 return false
             }
+            /**
+             * 聚合标注
+             */
+            var styleCache = {}
+            this.clustersSource=new ol.source.Cluster({
+                distance:40,
+                source:new ol.source.Vector()
+            })
+            this.clustersLayer=new ol.layer.Vector({
+                source:this.clustersSource,
+                style: function (feature, resolution) {
+                var size = feature.get('features').length;
+                var style = styleCache[size];
+                if (!style) {
+                    style = [
+                        new ol.style.Style({
+                            image: new ol.style.Circle({
+                                radius: 10,
+                                stroke: new ol.style.Stroke({
+                                    color: '#fff'
+                                }),
+                                fill: new ol.style.Fill({
+                                    color: '#3399CC'
+                                })
+                            }),
+                            text: new ol.style.Text({
+                                text: size.toString(),
+                                fill: new ol.style.Fill({
+                                    color: '#fff'
+                                })
+                            })
+                        })
+                    ];
+                    styleCache[size] = style;
+                }
+                return style;
+            }
+                
+            })
+            this.map.addLayer(this.clustersLayer)
             
         },
         /**
