@@ -3,11 +3,12 @@ import Map from 'ol/Map'
 import Feature from 'ol/Feature'
 import Overlay from 'ol/Overlay'
 import {Tile,Image,Vector} from 'ol/layer'
-import {XYZ,WMTS,Vector as VectorSource,TileWms} from 'ol/source'
+import {Cluster,XYZ,WMTS,Vector as VectorSource,TileWms} from 'ol/source'
 import {WFS,GeoJSON,} from 'ol/format'
 import {OSM,TileWMS,ImageWMS} from 'ol/source'
 import {Point,LineString,Circle as CirCle} from 'ol/geom'
 import {transform, fromLonLat, toLonLat} from 'ol/proj'
+import {Select,Draw, Modify, Snap,Interaction} from 'ol/interaction'
 import {unByKey} from 'ol/Observable'
 import {Style,Fill,Stroke,Text,Circle,Icon,Image as ImageStyle} from 'ol/style'
 import {defaults,ZoomToExtent,MousePosition,OverviewMap,ScaleLine} from 'ol/control'
@@ -42,6 +43,14 @@ const ol = {
     TileWMS: TileWMS,
     ImageWMS: ImageWMS,
     XYZ: XYZ,
+    Cluster:Cluster
+  },
+  interaction:{
+    Select:Select,
+    Draw:Draw,
+    Modify:Modify,
+    Snap:Snap,
+    Interaction:Interaction
   },
   format: {
     WFS: WFS,
