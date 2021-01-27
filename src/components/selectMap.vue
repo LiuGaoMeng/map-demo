@@ -560,6 +560,10 @@ export default {
                     this.clustersSource.getSource().addFeatures(features)
                     this.map.getView().setCenter([-336989.1397,593087.8330])
                     this.map.getView().setZoom(4)
+                    let select=new ol.interaction.Select({
+                        condition: function (evt) {},
+                        style: null,
+                    })
                     
                     break;
             }
@@ -682,14 +686,14 @@ export default {
             this.map= new Map({
                 target:'mapDiv',
                 layers:[this.tdtMap_vec,tdtMap_cva,this.tdtMap_img,tdtMap_cia],
-                interactions: defaultInteractions().extend([
+                //interactions: defaultInteractions().extend([
                     // new ol.interaction.Select({
                     //     condition: function (evt) {
                     //         return evt.type == 'pointermove' || evt.type == 'singleclick';
                     //     },
                     //     style: selectStyleFunction,
                     // }) 
-                ]),
+                //]),
                 view:new View({
                     //地图中心点
                     center:[12606072.0, 2650934.0],
