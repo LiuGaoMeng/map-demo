@@ -550,7 +550,8 @@ export default {
                     
                     break;
                 case 'merrage':
-                    
+                //     this.map.removeInteraction(this.draw)
+                // this.map.removeInteraction(this.snap)
                     let e = 4500000
                     let features = new Array(20000)
                     for(let i=0;i<20000;++i){
@@ -561,12 +562,13 @@ export default {
                     this.map.getView().setCenter([-336989.1397,593087.8330])
                     this.map.getView().setZoom(4)
                     let selectInteraction=new ol.interaction.Select({
-                        condition: function (evt) {
-                            return evt.type == 'pointermove'
-                        },
-                        style: this.selectStyleFunction(),
+                        // condition: ol.events.condition.pointerMove,
+                        // style:this.selectStyleFunction(),
                     })
                     this.map.addInteraction(selectInteraction)
+                    selectInteraction.on('select',(e)=>{
+                        debugger
+                    })
                     break;
             }
             
@@ -717,14 +719,14 @@ export default {
             /***
              * 地图双击事件
              */
-            this.map.on('click',(evt)=>{
+            // this.map.on('click',(evt)=>{
                 
                 // let feature=this.map.forEachFeatureAtPixel(evt.pixel,function (feature, layer) {
                 //     debugger
                 // })
-                debugger
-                let shpLayer=this.map
-                let feature=this.map.getFeaturesAtPixel(evt.pixel)
+                // debugger
+                // let shpLayer=this.map
+                // let feature=this.map.getFeaturesAtPixel(evt.pixel)
                 // let feature2=this.map.forEachFeatureAtPixel(evt.pixel,(feature,layer)=>{
                 //     debugger
                 //     let d=res
@@ -734,14 +736,14 @@ export default {
                 //     shpLayer=fea
                 // })
               
-                if(vm.markFalg){
-                    let featureSource=new ol.Feature({
-                        geometry:new ol.geom.Point(evt.coordinate)
-                    })
-                    featureSource.setStyle(vm.markStyle)
-                    vm.markLayer.getSource().addFeature(featureSource)
-                }
-            })
+            //     if(vm.markFalg){
+            //         let featureSource=new ol.Feature({
+            //             geometry:new ol.geom.Point(evt.coordinate)
+            //         })
+            //         featureSource.setStyle(vm.markStyle)
+            //         vm.markLayer.getSource().addFeature(featureSource)
+            //     }
+            // })
             /**
              * 初始化绘画图层
              */
@@ -1127,6 +1129,23 @@ export default {
         //     }
         // }
         selectStyleFunction(feature){
+            debugger
+             var styles = [
+                new Style({
+                image: new ol.style.Circle({
+                    // radius: feature.get('radius'),
+                    fill: new ol.style.Fill({
+                        color: 'rgba(255, 255, 255, 0.01)'
+                    }),
+                }),
+                }) ];
+            var originalFeatures = feature.get('features');
+            var originalFeature;
+            for (var i = originalFeatures.length - 1; i >= 0; --i) {
+                originalFeature = originalFeatures[i];
+                styles.push(createEarthquakeStyle(originalFeature));
+            }
+            return styles;
 
         }
     }
