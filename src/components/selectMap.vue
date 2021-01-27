@@ -561,8 +561,10 @@ export default {
                     this.map.getView().setCenter([-336989.1397,593087.8330])
                     this.map.getView().setZoom(4)
                     let selectInteraction=new ol.interaction.Select({
-                        condition: function (evt) {},
-                        style: null,
+                        condition: function (evt) {
+                            return evt.type == 'pointermove'
+                        },
+                        style: this.selectStyleFunction(),
                     })
                     this.map.addInteraction(selectInteraction)
                     break;
@@ -1124,6 +1126,9 @@ export default {
         //         ele.innerText=text
         //     }
         // }
+        selectStyleFunction(feature){
+
+        }
     }
 }
 </script>
