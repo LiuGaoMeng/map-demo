@@ -8,9 +8,9 @@ import {WFS,GeoJSON,} from 'ol/format'
 import {OSM,TileWMS,ImageWMS} from 'ol/source'
 import {Point,LineString,Circle as CirCle} from 'ol/geom'
 import {transform, fromLonLat, toLonLat} from 'ol/proj'
-import {Select,Draw, Modify, Snap,Interaction} from 'ol/interaction'
+import {Select,Draw, Modify, Snap,Interaction,defaults as defaultInteractions} from 'ol/interaction'
 import {unByKey} from 'ol/Observable'
-import {Style,Fill,Stroke,Text,Circle,Icon,Image as ImageStyle} from 'ol/style'
+import {Style,Fill,Stroke,Text,Circle,Icon,Image as ImageStyle,RegularShape} from 'ol/style'
 import {defaults,ZoomToExtent,MousePosition,OverviewMap,ScaleLine} from 'ol/control'
 import { buffer } from 'ol/extent'
 
@@ -50,7 +50,8 @@ const ol = {
     Draw:Draw,
     Modify:Modify,
     Snap:Snap,
-    Interaction:Interaction
+    Interaction:Interaction,
+    defaults:defaultInteractions
   },
   format: {
     WFS: WFS,
@@ -63,7 +64,8 @@ const ol = {
     Image: ImageStyle,
     Icon: Icon,
     Circle: Circle,
-    Text:Text
+    Text:Text,
+    RegularShape:RegularShape
   },
   proj: {
     transform: transform,
