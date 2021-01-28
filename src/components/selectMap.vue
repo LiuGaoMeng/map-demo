@@ -552,9 +552,10 @@ export default {
                 case 'merrage':
                 //     this.map.removeInteraction(this.draw)
                 // this.map.removeInteraction(this.snap)
+                this.markFalg=false
                     let e = 4500000
-                    let features = new Array(20000)
-                    for(let i=0;i<20000;++i){
+                    let features = new Array(200)
+                    for(let i=0;i<200;++i){
                         var coordinates = [2* e * Math.random()-e, 2 * e * Math.random() - e]
                         features[i] = new ol.Feature(new ol.geom.Point(coordinates))
                     }
@@ -712,7 +713,6 @@ export default {
             })
 
             function selectStyleFunction(feature){
-            debugger
              var styles = [
                 new Style({
                 image: new ol.style.Circle({
@@ -765,7 +765,7 @@ export default {
             /***
              * 地图双击事件
              */
-            // this.map.on('click',(evt)=>{
+            this.map.on('click',(evt)=>{
                 
                 // let feature=this.map.forEachFeatureAtPixel(evt.pixel,function (feature, layer) {
                 //     debugger
@@ -782,14 +782,14 @@ export default {
                 //     shpLayer=fea
                 // })
               
-            //     if(vm.markFalg){
-            //         let featureSource=new ol.Feature({
-            //             geometry:new ol.geom.Point(evt.coordinate)
-            //         })
-            //         featureSource.setStyle(vm.markStyle)
-            //         vm.markLayer.getSource().addFeature(featureSource)
-            //     }
-            // })
+                if(vm.markFalg){
+                    let featureSource=new ol.Feature({
+                        geometry:new ol.geom.Point(evt.coordinate)
+                    })
+                    featureSource.setStyle(vm.markStyle)
+                    vm.markLayer.getSource().addFeature(featureSource)
+                }
+            })
             /**
              * 初始化绘画图层
              */
