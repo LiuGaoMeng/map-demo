@@ -561,14 +561,15 @@ export default {
                     this.clustersSource.getSource().addFeatures(features)
                     this.map.getView().setCenter([-336989.1397,593087.8330])
                     this.map.getView().setZoom(4)
-                    let selectInteraction=new ol.interaction.Select({
+                    // let selectInteraction=new ol.interaction.Select({
                         // condition: ol.events.condition.pointerMove,
                         // style:this.selectStyleFunction(),
-                    })
-                    this.map.addInteraction(selectInteraction)
-                    selectInteraction.on('select',(e)=>{
-                        debugger
-                    })
+                    // })
+                    // this.map.addInteraction(selectInteraction)
+                    // selectInteraction.on('select',(e)=>{
+                    //     this.selectStyleFunction( e.target)
+                    //     debugger
+                    // })
                     break;
             }
             
@@ -690,14 +691,14 @@ export default {
             this.map= new Map({
                 target:'mapDiv',
                 layers:[this.tdtMap_vec,tdtMap_cva,this.tdtMap_img,tdtMap_cia],
-                //interactions: defaultInteractions().extend([
-                    // new ol.interaction.Select({
-                    //     condition: function (evt) {
-                    //         return evt.type == 'pointermove' || evt.type == 'singleclick';
-                    //     },
-                    //     style: selectStyleFunction,
-                    // }) 
-                //]),
+                interactions: ol.interaction.defaults().extend([
+                    new ol.interaction.Select({
+                        condition: function (evt) {
+                            return evt.type == 'pointermove' || evt.type == 'singleclick';
+                        },
+                        style: selectStyleFunction,
+                    }) 
+                ]),
                 view:new View({
                     //地图中心点
                     center:[12606072.0, 2650934.0],
@@ -709,6 +710,51 @@ export default {
                     })
                 }).extend([mousePositionControl,overviewMap])
             })
+
+            function selectStyleFunction(feature){
+            debugger
+             var styles = [
+                new Style({
+                image: new ol.style.Circle({
+                    // radius: feature.get('radius'),
+                    fill: new ol.style.Fill({
+                        color: 'rgba(255, 255, 255, 0.01)'
+                    }),
+                }),
+                }) ];
+            var originalFeatures = feature.get('features');
+            var originalFeature;
+            for (var i = originalFeatures.length - 1; i >= 0; --i) {
+                originalFeature = originalFeatures[i];
+                styles.push(createEarthquakeStyle(originalFeature));
+            }
+            return styles;
+
+        }
+        function createEarthquakeStyle(feature) {
+            // var name = feature.get('name');
+            // var magnitude = parseFloat(name.substr(2));
+            var magnitude =6
+            var radius = 5 + 20 * (magnitude - 5);
+
+            return new ol.style.Style({
+                geometry: feature.getGeometry(),
+                image: new ol.style.RegularShape({
+                    radius1: radius,
+                    radius2: 3,
+                    points: 5,
+                    angle: Math.PI,
+                    fill: new ol.style.Fill({
+                        color: 'rgba(255, 153, 0, 0.8)',
+                    }),
+                    stroke:new ol.style.Stroke({
+                        color: 'rgba(255, 204, 0, 0.2)',
+                        width: 1,
+                    })
+                }),
+            });
+        }
+
             this.map.addControl(scaleLineControl);
             this.loadLayersControl(this.map,'layerTree')
             /**
@@ -1143,10 +1189,31 @@ export default {
             var originalFeature;
             for (var i = originalFeatures.length - 1; i >= 0; --i) {
                 originalFeature = originalFeatures[i];
-                styles.push(createEarthquakeStyle(originalFeature));
+                styles.push(this.createEarthquakeStyle(originalFeature));
             }
             return styles;
 
+        },
+        createEarthquakeStyle(feature) {
+            var name = feature.get('name');
+            var magnitude = parseFloat(name.substr(2));
+            var radius = 5 + 20 * (magnitude - 5);
+
+            return new ol.style.Style({
+                geometry: feature.getGeometry(),
+                image: new ol.style.RegularShape({
+                    radius1: radius,
+                    radius2: 3,
+                    points: 5,
+                    angle: Math.PI,
+                    fill: new ol.style.Fill({
+                        color: 'rgba(255, 153, 0, 0.8)',
+                    }),
+                    stroke:  new ol.style.Fill({
+                        color: 'rgba(255, 153, 0, 0.8)',
+                    })
+                }),
+            });
         }
     }
 }
