@@ -24,7 +24,7 @@ const getAccesRouterList = (routes, rules) => {
 const actions = {
   concatRoutes ({ commit }, rules) {
     return new Promise((resolve, reject) => {
-      debugger
+      
       try {
         let routerList = []
         if (Object.entries(rules).every(item => item[1])) {

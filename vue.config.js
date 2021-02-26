@@ -7,6 +7,7 @@ const resolve = dir => path.join(__dirname,dir)
 module.exports = {
   lintOnSave: false,
   baseUrl:BASE_URL,
+
   chainWebpack: config => {
     config.resolve.alias
       .set('@',resolve('src'))

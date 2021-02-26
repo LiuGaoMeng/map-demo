@@ -4,13 +4,19 @@
       <img :src="logoSrc" />
     </div> -->
     <Menu ref="menu" :active-name="$route.name" theme="dark" width="auto" :open-names="openNames">
-        <Submenu :name="RouterItem.name" v-for="RouterItem in routers" :key='RouterItem.name'>
+      <template v-for="RouterItem in routers">
+        <template v-if="RouterItem.children!=undefined && RouterItem.children.length>0">
+          <Submenu  :name="RouterItem.name"  :key='RouterItem.name'>
             <template slot="title">
-                <!-- <Icon type="ios-navigate"></Icon> -->
-                {{RouterItem.name}}
+                <span>{{RouterItem.name}}</span>
             </template>
-            <MenuItem :name="item.name" :to="RouterItem.path+'/'+item.path" v-for="item in RouterItem.children" :key='item.name'>{{item.name}}</MenuItem>
+            <MenuItem :name="item.name" :to="RouterItem.path+item.path" v-for="item in RouterItem.children" :key='item.name'><span>{{item.meta.title}}</span></MenuItem>
         </Submenu>
+        </template>
+        <template v-else>
+           <MenuItem :name="RouterItem.name"  :to="'/'+RouterItem.path" :key='RouterItem.name'><span>{{RouterItem.meta.title}}</span></MenuItem>
+        </template>
+      </template>
     </Menu>
   </div>
 </template>
@@ -28,10 +34,14 @@
     computed:{
       ...mapState({
       routers: state => state.router.routers.filter(item => {
+        
         return item.path !== '*' && item.name !== 'login'
       })
     }),
     openNames () {
+      debugger
+      
+     let c=this.routers
       return getOpenArrByName(this.$route.name, this.routers)
     }
     },

@@ -4,23 +4,13 @@ import Layout from '@/views/Layout.vue'
 export const routerMap =[
  
   {
-    path: '/map',
+    path: '/',
     name: '地图实列',
     component: Layout,
     meta: {
       title: '地图'
     },
     children:[
-      // {
-      //   path: 'table',
-      //   name: 'table',
-      //   component: () =>import('@/views/IndexTable.vue')
-      // },
-      // {
-      //   path: 'table2',
-      //   name: 'table2',
-      //   component: () =>import('@/views/IndexTable.vue')
-      // },
       {
         name: 'map',
         path: 'map',
@@ -87,40 +77,18 @@ export const routerMap =[
         meta:{
           title:'WmsAndWmts'
         }
-      },{
-        path: 'selectMap',
-        name: 'Tool工具',
-        component: () => import(/* webpackChunkName: "about" */ '@/components/selectMap.vue'),
-        meta:{
-          title:'Tool工具'
-        }
       }
     ]
+  },
+  {
+    path: 'selectMap',
+    name: 'Tool工具',
+    component: Layout,
+    component: () => import(/* webpackChunkName: "about" */ '@/components/selectMap.vue'),
+    meta:{
+      title:'Tool工具'
+    }
   }
-  // ,
-  // {
-  //   path: 'geomap',
-  //   name: 'GeoMap',
-  //   component: () => import(/* webpackChunkName: "about" */ '@/components/GeoMap.vue'),
-  //   meta:{
-  //     title:'Geoserver案例'
-  //   }
-  // },
-  // {
-  //   path: '/page1',
-  //   name: 'page1',
-  //   component: Layout,
-  //   meta: {
-  //     title: '测试'
-  //   },
-  //   children:[
-  //     {
-  //       path: 'page2',
-  //       name: 'page2',
-  //       component: () =>import('@/views/IndexTable.vue')
-  //     }
-  //   ]
-  // },
 ]
 
 export const routes =[

@@ -55,7 +55,7 @@ export default {
                 // minZoom:1, // 地图缩放最小级别
             }),
         })
-        debugger
+        
         console.log(this.map.get("target"))
       
     }

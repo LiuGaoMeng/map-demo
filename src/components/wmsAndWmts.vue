@@ -143,15 +143,15 @@ export default {
             
             let url=wmsshp.getSource().getFeatureInfoUrl(evt.coordinate,view,projection,{'INFO_FORMAT': 'text/html'})
             fetch(url).then((res)=>{
-                debugger
+                
                 return res.text();
             }).then((html)=>{
-                debugger
+                
                 document.getElementById('info').innerHTML = html;
             })
             //接口获取数据--wms
             axios.get(url).then(res=>{
-              debugger
+              
             })
             // if (url) {
             //     debugger

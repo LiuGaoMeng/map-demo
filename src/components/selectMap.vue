@@ -713,7 +713,7 @@ export default {
                     attibuttonOptions:({
                         collapsible: true
                     })
-                }).extend([mousePositionControl,overviewMap])
+                }).extend([overviewMap])
             })
 
             function selectStyleFunction(feature){
@@ -1179,7 +1179,7 @@ export default {
         //     }
         // }
         selectStyleFunction(feature){
-            debugger
+            
              var styles = [
                 new Style({
                 image: new ol.style.Circle({

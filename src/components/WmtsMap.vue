@@ -141,7 +141,7 @@ export default {
                 })
             }).extend([mousePositionControl])
         })
-        debugger
+        
         this.feature=this.vector.getSource().getFeatureById('1')
     }
   }
