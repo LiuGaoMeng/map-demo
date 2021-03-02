@@ -13,6 +13,7 @@ import {unByKey} from 'ol/Observable'
 import {Style,Fill,Stroke,Text,Circle,Icon,Image as ImageStyle,RegularShape} from 'ol/style'
 import {defaults,ZoomToExtent,MousePosition,OverviewMap,ScaleLine} from 'ol/control'
 import { buffer } from 'ol/extent'
+import {getArea, getLength} from 'ol/sphere'
 
 const ol = {
   View: View,
@@ -77,6 +78,10 @@ const ol = {
   },
   Observable:{
     unByKey:unByKey  //移除绑定三维on或者once事件
+  },
+  sphere:{
+    getArea:getArea,
+    getLength:getLength
   }
 }
 

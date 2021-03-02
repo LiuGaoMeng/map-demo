@@ -110,7 +110,7 @@ export default {
 .app-center-top{
     position: absolute;
     top:5px;
-    left: 36%;
+    left: 32%;
     // width: 520px;
     height: 34px;
     line-height: 34px;

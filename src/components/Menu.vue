@@ -11,6 +11,7 @@
                 <span>{{RouterItem.name}}</span>
             </template>
             <MenuItem :name="item.name" :to="RouterItem.path+item.path" v-for="item in RouterItem.children" :key='item.name'><span>{{item.meta.title}}</span></MenuItem>
+            
         </Submenu>
         </template>
         <template v-else>
