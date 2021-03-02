@@ -40,7 +40,7 @@
       ...mapActions(['login','getPhoneCode']),
       handleSubmit () {
         if(this.username!="admin" || this.password!='123') return false;
-        this.login( {phone:this.phone,phoneCode:this.phoneCode} ).then(()=>{
+        this.login( {username:this.username,password:this.password} ).then(()=>{
           this.$router.push('/map')
         }).catch(error => {
           console.log(error)
