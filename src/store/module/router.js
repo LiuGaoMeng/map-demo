@@ -19,8 +19,7 @@ const getAccesRouterList = (routes, rules) => {
       return true
     } else return false
   })
-}
-
+} 
 const actions = {
   concatRoutes ({ commit }, rules) {
     return new Promise((resolve, reject) => {

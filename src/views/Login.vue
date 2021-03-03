@@ -39,7 +39,7 @@
       handleSubmit () {
         if(!this.phone || !this.phoneCode) return false;
         this.login( {phone:this.phone,phoneCode:this.phoneCode} ).then(()=>{
-          this.$router.push('/home/table')
+          this.$router.push('/')
         }).catch(error => {
           console.log(error)
         })

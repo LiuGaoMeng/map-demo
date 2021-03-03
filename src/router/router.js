@@ -10,6 +10,7 @@ export const routerMap =[
     meta: {
       title: '地图'
     },
+    redirect: 'map',
     children:[
       {
         name: 'map',
@@ -81,7 +82,7 @@ export const routerMap =[
     ]
   },
   {
-    path: 'selectMap',
+    path: '/selectMap',
     name: 'Tool工具',
     component: Layout,
     component: () => import(/* webpackChunkName: "about" */ '@/components/selectMap.vue'),
