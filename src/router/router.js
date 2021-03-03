@@ -87,11 +87,11 @@ export const routerMap =[
         }
       },
       {
-        path: 'mesure',
-        name: '测量',
-        component: () => import(/* webpackChunkName: "about" */ '@/components/measure.vue'),
+        path: 'animation',
+        name: '动画',
+        component: () => import(/* webpackChunkName: "about" */ '@/components/animation.vue'),
         meta:{
-          title:'测量'
+          title:'动画'
         }
       }
     ]

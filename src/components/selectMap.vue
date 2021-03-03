@@ -395,8 +395,7 @@ export default {
                    this.modify.setActive(false)
                     this.map.removeInteraction(this.modify)
                     break
-            }
-           
+            } 
             /**
              * 几何图形
              */
@@ -602,20 +601,23 @@ export default {
                 })
             })
             this.map.addLayer(measureLayer)
+            let measureDraw
              switch(type){
                 case 'mesureLine':
                     this.drawType='LineString'
+                    measureDraw=null
 
                     break
                 case 'measureArea':
                      this.drawType='Polygon'
+                     measureDraw=null
 
                     break
                 case 'selectShp':
 
                     break
             }
-            let measureDraw=new ol.interaction.Draw({
+             measureDraw=new ol.interaction.Draw({
                 source:measureSource,
                 type:this.drawType,
                 style: new ol.style.Style({
@@ -630,26 +632,26 @@ export default {
                 image: new ol.style.Circle({
                     radius: 5,
                     stroke: new ol.style.Stroke({
-                    color: 'rgba(0, 0, 0, 0.7)',
-                    }),
-                    fill: new ol.style.Fill({
-                    color: 'rgba(255, 255, 255, 0.2)',
+                        color: 'rgba(0, 0, 0, 0.7)',
+                        }),
+                        fill: new ol.style.Fill({
+                        color: 'rgba(255, 255, 255, 0.2)',
                     }),
                 }),
             })
             })
             this.map.addInteraction(measureDraw)
             let listener=null
+            let sketch=null
             
             measureDraw.on('drawstart',(evt)=>{
-                let feature=evt.feature
-                listener=feature.getGeometry().on('change',(evt)=>{
+                sketch=evt.feature
+                listener=sketch.getGeometry().on('change',(evt)=>{
                     let geom=evt.target
                     let output,tooltipCoord
                     if (geom instanceof Polygon) {
                         output=this.formatArea(geom)
                         tooltipCoord=geom.getInteriorPoint().getCoordinates()
-
                     }else if (geom instanceof LineString) {
                         output=this.formatLength(geom)
                         tooltipCoord=geom.getLastCoordinate()
@@ -658,11 +660,13 @@ export default {
                      this.measureTooltip.setPosition(tooltipCoord)
                 })
             })
-            measureDraw.on('drawend',()=>{
+            measureDraw.on('drawend',(evt)=>{
+                debugger
                 this.measureTooltipElement.className='ol-tooltip ol-tooltip-static'
                 this.measureTooltip.setOffset([0,-7])
+                sketch=null //置空当前绘制的要素对象
                 ol.Observable.unByKey(listener)
-
+                // this.map.removeInteraction(measureDraw)
             })
         })
         bus.$on('removeInteraction',(type)=>{
@@ -772,14 +776,14 @@ export default {
             this.map= new Map({
                 target:'mapDiv',
                 layers:[this.tdtMap_vec,tdtMap_cva,this.tdtMap_img,tdtMap_cia],
-                interactions: ol.interaction.defaults().extend([
-                    new ol.interaction.Select({
-                        condition: function (evt) {
-                            return evt.type == 'pointermove' || evt.type == 'singleclick';
-                        },
-                        style: selectStyleFunction,
-                    }) 
-                ]),
+                // interactions: ol.interaction.defaults().extend([
+                //     new ol.interaction.Select({
+                //         condition: function (evt) {
+                //             return evt.type == 'pointermove' || evt.type == 'singleclick';
+                //         },
+                //         style: selectStyleFunction,
+                //     }) 
+                // ]),
                 view:new View({
                     //地图中心点
                     center:[12606072.0, 2650934.0],
@@ -840,13 +844,13 @@ export default {
             /**
              * 图片点击事件
              */
-            this.map.on('singleclick',(e)=>{
-            })
+            // this.map.on('singleclick',(e)=>{
+            //     debugger
+            // })
             /***
              * 地图双击事件
              */
             this.map.on('click',(evt)=>{
-                
                 // let feature=this.map.forEachFeatureAtPixel(evt.pixel,function (feature, layer) {
                 //     debugger
                 // })
@@ -861,7 +865,6 @@ export default {
                 //     debugger
                 //     shpLayer=fea
                 // })
-              
                 if(vm.markFalg){
                     let featureSource=new ol.Feature({
                         geometry:new ol.geom.Point(evt.coordinate)
@@ -1047,9 +1050,6 @@ export default {
            }
         },
         exportPdf(){
-            
-            let c=this.res
-            let d=this.a1
             let dim=this.dims[this.a1]
             let width=Math.round((dim[0]*this.res)/25.4)
             let height=Math.round((dim[1]*this.res)/25.4)

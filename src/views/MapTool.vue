@@ -50,7 +50,7 @@
                     <DropdownItem name='removeMerrage'>移除聚合标注</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
-            <Dropdown trigger="click" @on-click="shpCartoon">
+            <!-- <Dropdown trigger="click" @on-click="shpCartoon">
                 <a href="javascript:void(0)">要素动画
                     <Icon type='ios-arrow-down'></Icon>
                 </a>
@@ -58,7 +58,7 @@
                     <DropdownItem name='shpCar'>要素动画</DropdownItem>
                     <DropdownItem name='shpMove'>要素移动</DropdownItem>
                 </DropdownMenu>
-            </Dropdown>
+            </Dropdown> -->
              <Dropdown trigger="click" @on-click="mapTool">
                 <a href="javascript:void(0)">工具箱
                     <Icon type='ios-arrow-down'></Icon>
@@ -66,7 +66,7 @@
                 <DropdownMenu slot="list">
                     <DropdownItem name='mesureLine'>测距</DropdownItem>
                     <DropdownItem name='measureArea'>测面</DropdownItem>
-                     <DropdownItem name='selectShp'>选择要素</DropdownItem>
+                     <!-- <DropdownItem name='selectShp'>选择要素</DropdownItem> -->
                     <!--<DropdownItem name='popup'>popup弹出</DropdownItem>
                     <DropdownItem name='merrage'>聚合标注</DropdownItem> -->
                 </DropdownMenu>
@@ -98,9 +98,6 @@ export default {
         },
         mapTool(type){
             bus.$emit("mapTool",type)
-        },
-        shpCartoon(type){
-
         }
 
     }

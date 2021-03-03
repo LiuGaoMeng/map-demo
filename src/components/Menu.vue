@@ -40,9 +40,6 @@
       })
     }),
     openNames () {
-      debugger
-      
-     let c=this.routers
       return getOpenArrByName(this.$route.name, this.routers)
     }
     },
