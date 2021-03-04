@@ -15,6 +15,7 @@ import {Style,Fill,Stroke,Text,Circle,Icon,Image as ImageStyle,RegularShape} fro
 import {defaults,ZoomToExtent,MousePosition,OverviewMap,ScaleLine} from 'ol/control'
 import { buffer } from 'ol/extent'
 import {getArea, getLength} from 'ol/sphere'
+import {getVectorContext} from 'ol/render'
 
 const ol = {
   View: View,
@@ -63,6 +64,9 @@ const ol = {
     transform: transform,
     fromLonLat: fromLonLat,
     toLonLat: toLonLat,
+  },
+  render:{
+    getVectorContext:getVectorContext
   },
   style: {
     Style: Style,
