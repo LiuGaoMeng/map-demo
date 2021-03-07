@@ -5,10 +5,10 @@ export const routerMap =[
  
   {
     path: '/',
-    name: '地图实列',
+    name: 'OpenLayers实列',
     component: Layout,
     meta: {
-      title: '地图'
+      title: 'OpenLayers'
     },
     redirect: 'map',
     children:[
@@ -78,17 +78,43 @@ export const routerMap =[
         meta:{
           title:'WmsAndWmts'
         }
+      },
+      {
+        path: 'selectMap',
+        name: '工具案例',
+        component: () => import(/* webpackChunkName: "about" */ '@/components/selectMap.vue'),
+        meta:{
+          title:'工具案例'
+        }
+      },
+      {
+        path: 'animation',
+        name: '动画',
+        component: () => import(/* webpackChunkName: "about" */ '@/components/animation.vue'),
+        meta:{
+          title:'动画'
+        }
       }
     ]
-  },
+  }
+  ,
   {
-    path: '/selectMap',
-    name: 'Tool工具',
+    path: '/',
+    name: 'ArcGIS实列',
     component: Layout,
-    component: () => import(/* webpackChunkName: "about" */ '@/components/selectMap.vue'),
-    meta:{
-      title:'Tool工具'
-    }
+    meta: {
+      title: 'ArcGIS'
+    },
+    children:[
+      {
+        name: 'map',
+        path: 'map',
+        component: () => import(/* webpackChunkName: "about" */ '@/components/Map.vue'),
+        meta:{
+          title:'简单案例'
+        }
+      },
+    ]
   }
 ]
 

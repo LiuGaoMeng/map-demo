@@ -87,9 +87,12 @@ export default {
             markStyle:null,//标注样式
             clustersLayer:null,//聚合层
             clustersSource:null,
+            measureTooltipElement:null,
+            measureTooltip:null,
             container:null,
             content:null,
             close:null,
+            drawType:'',//测量类型
             featuerInfo:null,
             vecLayerXY:null,
             a1:'a4',
@@ -270,8 +273,6 @@ export default {
                     })
                     break;
                 case 'unwatch':
-                   
-
             }
             
 
@@ -394,8 +395,7 @@ export default {
                    this.modify.setActive(false)
                     this.map.removeInteraction(this.modify)
                     break
-            }
-           
+            } 
             /**
              * 几何图形
              */
@@ -580,20 +580,100 @@ export default {
             
         })
         bus.$on('mapTool',(type)=>{
-            switch(type){
+            this.createMeasureTooltip()
+            let measureSource=new ol.source.Vector()
+            let measureLayer=new ol.layer.Vector({
+                source:measureSource,
+                style:new ol.style.Style({
+                    fill:new ol.style.Fill({
+                        color:'rgba(255,255,255,0.2)',
+                    }),
+                    stroke:new ol.style.Stroke({
+                        color:'#ffcc33',
+                        width:2,
+                    }),
+                    image:new ol.style.Circle({
+                        radius:7,
+                        fill:new ol.style.Fill({
+                            color:'#ffcc33'
+                        })
+                    })
+                })
+            })
+            this.map.addLayer(measureLayer)
+            let measureDraw
+             switch(type){
                 case 'mesureLine':
+                    this.drawType='LineString'
+                    measureDraw=null
+
                     break
                 case 'measureArea':
+                     this.drawType='Polygon'
+                     measureDraw=null
+
                     break
                 case 'selectShp':
+
                     break
             }
+             measureDraw=new ol.interaction.Draw({
+                source:measureSource,
+                type:this.drawType,
+                style: new ol.style.Style({
+                fill: new ol.style.Fill({
+                    color: 'rgba(255, 255, 255, 0.2)',
+                }),
+                stroke: new ol.style.Stroke({
+                    color: 'rgba(0, 0, 0, 0.5)',
+                    lineDash: [10, 10],
+                    width: 2,
+                }),
+                image: new ol.style.Circle({
+                    radius: 5,
+                    stroke: new ol.style.Stroke({
+                        color: 'rgba(0, 0, 0, 0.7)',
+                        }),
+                        fill: new ol.style.Fill({
+                        color: 'rgba(255, 255, 255, 0.2)',
+                    }),
+                }),
+            })
+            })
+            this.map.addInteraction(measureDraw)
+            let listener=null
+            let sketch=null
+            
+            measureDraw.on('drawstart',(evt)=>{
+                sketch=evt.feature
+                listener=sketch.getGeometry().on('change',(evt)=>{
+                    let geom=evt.target
+                    let output,tooltipCoord
+                    if (geom instanceof Polygon) {
+                        output=this.formatArea(geom)
+                        tooltipCoord=geom.getInteriorPoint().getCoordinates()
+                    }else if (geom instanceof LineString) {
+                        output=this.formatLength(geom)
+                        tooltipCoord=geom.getLastCoordinate()
+                    }
+                     this.measureTooltipElement.innerHTML=output
+                     this.measureTooltip.setPosition(tooltipCoord)
+                })
+            })
+            measureDraw.on('drawend',(evt)=>{
+                debugger
+                this.measureTooltipElement.className='ol-tooltip ol-tooltip-static'
+                this.measureTooltip.setOffset([0,-7])
+                sketch=null //置空当前绘制的要素对象
+                ol.Observable.unByKey(listener)
+                // this.map.removeInteraction(measureDraw)
+            })
         })
         bus.$on('removeInteraction',(type)=>{
             if(this.draw!=null&&this.snap!=null&&this.modify!=null){
                 this.map.removeInteraction(this.draw)
                 this.map.removeInteraction(this.snap)
-                }
+            }
 
         })
         /**
@@ -696,14 +776,14 @@ export default {
             this.map= new Map({
                 target:'mapDiv',
                 layers:[this.tdtMap_vec,tdtMap_cva,this.tdtMap_img,tdtMap_cia],
-                interactions: ol.interaction.defaults().extend([
-                    new ol.interaction.Select({
-                        condition: function (evt) {
-                            return evt.type == 'pointermove' || evt.type == 'singleclick';
-                        },
-                        style: selectStyleFunction,
-                    }) 
-                ]),
+                // interactions: ol.interaction.defaults().extend([
+                //     new ol.interaction.Select({
+                //         condition: function (evt) {
+                //             return evt.type == 'pointermove' || evt.type == 'singleclick';
+                //         },
+                //         style: selectStyleFunction,
+                //     }) 
+                // ]),
                 view:new View({
                     //地图中心点
                     center:[12606072.0, 2650934.0],
@@ -764,13 +844,13 @@ export default {
             /**
              * 图片点击事件
              */
-            this.map.on('singleclick',(e)=>{
-            })
+            // this.map.on('singleclick',(e)=>{
+            //     debugger
+            // })
             /***
              * 地图双击事件
              */
             this.map.on('click',(evt)=>{
-                
                 // let feature=this.map.forEachFeatureAtPixel(evt.pixel,function (feature, layer) {
                 //     debugger
                 // })
@@ -785,7 +865,6 @@ export default {
                 //     debugger
                 //     shpLayer=fea
                 // })
-              
                 if(vm.markFalg){
                     let featureSource=new ol.Feature({
                         geometry:new ol.geom.Point(evt.coordinate)
@@ -971,9 +1050,6 @@ export default {
            }
         },
         exportPdf(){
-            
-            let c=this.res
-            let d=this.a1
             let dim=this.dims[this.a1]
             let width=Math.round((dim[0]*this.res)/25.4)
             let height=Math.round((dim[1]*this.res)/25.4)
@@ -1218,6 +1294,39 @@ export default {
                     })
                 }),
             });
+        },
+        formatArea(polygon){
+            let area=ol.sphere.getArea(polygon)
+            let num
+            if (area>10000) {
+                num=Math.round((area/1000000)*100)/100+' '+'KM<sup>2</sup>'
+            }else{
+                num=Math.round((area*100)/100+' '+'m<sup>2</sup>')
+            }
+            return num
+        },
+        formatLength(line){
+            let length=ol.sphere.getLength(line)
+            let num
+            if (length>100) {
+                num=Math.round((length/1000)*100)/100+' '+'km'
+            }else{
+                num=Math.round(length*100)/100+' '+'m'
+            }
+            return num
+        },
+        createMeasureTooltip(){
+            if (this.measureTooltipElement) {
+                this.measureTooltipElement.parentNode.removeChild(this.measureTooltipElement)
+            }
+            this.measureTooltipElement=document.createElement('div')
+            this.measureTooltipElement.className='ol-tooltip ol-tooltip-measure'
+            this.measureTooltip=new ol.Overlay({
+                element:this.measureTooltipElement,
+                offset:[0,15],
+                positioning:'bottom-center'
+            })
+            this.map.addOverlay(this.measureTooltip)
         }
     }
 }
@@ -1404,5 +1513,41 @@ export default {
             #popup-content .markerInfo {
                 font-weight: bold;
             }
+
+
+            /**测距测面样式 */
+            .ol-tooltip {
+        position: relative;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        color: white;
+        padding: 4px 8px;
+        opacity: 0.7;
+        white-space: nowrap;
+        font-size: 12px;
+      }
+      .ol-tooltip-measure {
+        opacity: 1;
+        font-weight: bold;
+      }
+      .ol-tooltip-static {
+        background-color: #ffcc33;
+        color: black;
+        border: 1px solid white;
+      }
+      .ol-tooltip-measure:before,
+      .ol-tooltip-static:before {
+        border-top: 6px solid rgba(0, 0, 0, 0.5);
+        border-right: 6px solid transparent;
+        border-left: 6px solid transparent;
+        content: "";
+        position: absolute;
+        bottom: -6px;
+        margin-left: -7px;
+        left: 50%;
+      }
+      .ol-tooltip-static:before {
+        border-top-color: #ffcc33;
+      }
 
 </style>

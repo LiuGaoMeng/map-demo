@@ -5,17 +5,18 @@
         <!-- <div class="main-title">xx管理后台</div> -->
         <div class="main-inputWrap">
           <Row class-name='inputMargin'>
-            <Col span="24">
-              <Input prefix="md-phone-portrait" v-model="phone" placeholder="请输入手机号"/>
-            </Col>
-          </Row>
-          <Row type="flex" align="middle" class-name='inputMargin'>
-            <Col span="16">
-              <Input prefix="md-mail" v-model="phoneCode" placeholder="请输入验证码"/>
-            </Col>
-            <Col span="6" offset='2'>
-              <Button type="primary" shape="circle" size='small' @click="handleCode">获取验证码</Button>
-            </Col>
+            <Form>
+               <Col span="24">
+                    <FormItem label="用户名" :label-width="100">
+                        <Input v-model="username" placeholder="用户名"/>
+                    </FormItem>
+                </Col>
+                <Col span="24">
+                    <FormItem label="密码"  :label-width="100">
+                        <Input v-model="password" placeholder="密码"/>
+                    </FormItem>
+                </Col>
+            </Form>
           </Row>
         </div>
         <div class="main-submit">
@@ -30,16 +31,16 @@
   export default {
     data() {
       return {
-          phone:'',
-          phoneCode:''
+          username:'admin',
+          password:'123'
       }
     },
     methods: {
       ...mapActions(['login','getPhoneCode']),
       handleSubmit () {
-        if(!this.phone || !this.phoneCode) return false;
-        this.login( {phone:this.phone,phoneCode:this.phoneCode} ).then(()=>{
-          this.$router.push('/')
+        if(this.username!="admin" || this.password!='123') return false;
+        this.login( {username:this.username,password:this.password} ).then(()=>{
+          this.$router.push('/map')
         }).catch(error => {
           console.log(error)
         })
