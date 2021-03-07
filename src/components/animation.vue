@@ -23,7 +23,8 @@ export default {
             tdtMap_vec:null,
             sliValue:999,
             vectorLayer:null,
-            map:null
+            map:null,
+            animaVec:null
         }
     },
     created(){
@@ -88,7 +89,64 @@ export default {
             })
     },
     animaShp(){
+        var animaShp = new ol.source.Vector({
+            wrapX: false
+        });
+        this.animaVec = new ol.layer.Vector({
+            source: animaShp
+        });
+        this.map.addLayer(this.animaVec);
+        animaShp.on('addfeature',  (e)=> {
+            this.flash(e.feature);
+        });
+        for (var i = 0; i<500; i++) {
+                var x = Math.random() * 360 - 180;
+                var y = Math.random() * 180 - 90;
+                var geom = new ol.geom.Point(ol.proj.transform([x, y], 'EPSG:4326', 'EPSG:3857'));
+                //var predrawtime = new Date();//当前毫秒数;
+                var feature = new ol.Feature(geom);
+                animaShp.addFeature(feature);
+                this.flash(feature);
+                //drawtime += new Date() - predrawtime;
+            }
     
+    },
+    flash(feature){
+        debugger
+         var start = new Date().getTime();
+            var listenerKey;
+        listenerKey = this.animaVec.on('postrender', (event)=>{
+            // var vectorContext = event.vectorContext;
+            debugger
+                    var vectorContext = ol.render.getVectorContext(event)
+                    var frameState = event.frameState;
+                    var flashGeom = feature.getGeometry().clone();
+                    var elapsed = frameState.time - start;
+                    var elapsedRatio = elapsed / 50000;
+                    //指定半径从5开始，到30结束
+                    var radius = ol.easing.easeOut(elapsedRatio) * 25 + 5;
+                    var opacity = ol.easing.easeOut(1 - elapsedRatio);
+
+                    var style = new ol.style.Style({
+                        image: new ol.style.Circle({
+                            radius: radius,
+                            snapToPixel: false,
+                            stroke: new ol.style.Stroke({
+                                color: 'rgba(255, 0, 0, ' + opacity + ')',
+                                width: 0.25 + opacity
+                            })
+                        })
+                    });
+
+                    vectorContext.setStyle(style);
+                    vectorContext.drawGeometry(flashGeom);
+                    if (elapsed > 50000) {
+                        ol.Observable.unByKey(listenerKey);
+                        return;
+                    }
+                    //继续postcompose动画
+                    this.map.render();
+        });
     },
     moveShp(){
         this.$refs.sliderDiv.hidden=false

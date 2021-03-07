@@ -16,6 +16,7 @@ import {defaults,ZoomToExtent,MousePosition,OverviewMap,ScaleLine} from 'ol/cont
 import { buffer } from 'ol/extent'
 import {getArea, getLength} from 'ol/sphere'
 import  * as renderJs from 'ol/render'
+import * as easing from 'ol/easing'
 
 const ol = {
   View: View,
@@ -32,6 +33,7 @@ const ol = {
   coordinate:{
     createStringXY:createStringXY
   },
+  easing:easing,
   extent: {
     buffer: buffer
   },
