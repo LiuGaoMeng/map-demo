@@ -3,9 +3,9 @@ import Map from 'ol/Map'
 import Feature from 'ol/Feature'
 import Overlay from 'ol/Overlay'
 import {createStringXY} from "ol/coordinate"
-import {Tile,Image,Vector} from 'ol/layer'
+import {Tile,Image,Vector,Heatmap } from 'ol/layer'
 import {Cluster,XYZ,WMTS,Vector as VectorSource,TileWms} from 'ol/source'
-import {WFS,GeoJSON,} from 'ol/format'
+import {WFS,GeoJSON,Polyline,KML} from 'ol/format'
 import {OSM,TileWMS,ImageWMS} from 'ol/source'
 import {Point,LineString,Circle as CirCle} from 'ol/geom'
 import {transform, fromLonLat, toLonLat} from 'ol/proj'
@@ -16,6 +16,7 @@ import {defaults,ZoomToExtent,MousePosition,OverviewMap,ScaleLine} from 'ol/cont
 import { buffer } from 'ol/extent'
 import {getArea, getLength} from 'ol/sphere'
 import {getVectorContext} from 'ol/render'
+import * as olEasing from 'ol/easing'
 
 const ol = {
   View: View,
@@ -32,12 +33,15 @@ const ol = {
   coordinate:{
     createStringXY:createStringXY
   },
+  easing:olEasing,
   extent: {
     buffer: buffer
   },
   format: {
     WFS: WFS,
     GeoJSON: GeoJSON,
+    Polyline:Polyline,
+    KML:KML
   },
   geom: {
     Point: Point,
@@ -56,6 +60,7 @@ const ol = {
     Tile: Tile,
     Image: Image,
     Vector: Vector,
+    Heatmap :Heatmap 
   },
   Observable:{
     unByKey:unByKey  //移除绑定三维on或者once事件

@@ -584,6 +584,7 @@ export default {
             let measureSource=new ol.source.Vector()
             let measureLayer=new ol.layer.Vector({
                 source:measureSource,
+                
                 style:new ol.style.Style({
                     fill:new ol.style.Fill({
                         color:'rgba(255,255,255,0.2)',
@@ -775,6 +776,7 @@ export default {
             //实例化Map对象
             this.map= new Map({
                 target:'mapDiv',
+                
                 layers:[this.tdtMap_vec,tdtMap_cva,this.tdtMap_img,tdtMap_cia],
                 // interactions: ol.interaction.defaults().extend([
                 //     new ol.interaction.Select({
