@@ -18,7 +18,6 @@
                 </Col>
             </Form>
           </Row>
-          
         </div>
         <div class="main-submit">
           <Button type="primary" shape="circle" long @click="handleSubmit">登录</Button>

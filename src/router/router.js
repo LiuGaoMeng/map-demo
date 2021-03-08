@@ -10,6 +10,7 @@ export const routerMap =[
     meta: {
       title: 'OpenLayers'
     },
+    redirect: 'map',
     children:[
       {
         name: 'map',

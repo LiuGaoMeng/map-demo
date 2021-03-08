@@ -21,6 +21,7 @@
         </div>
         <div class="sliderDiv" ref="closeDiv" hidden>
                 <Button @click="stopClo">关闭</Button>
+
         </div>
     </div>
 </template>
@@ -36,6 +37,7 @@ export default {
             sliValue:999,
             vectorLayer:null,
             heatLayer:null,
+            tdtMap_cva:null,
             map:null,
             animaVec:null,
             flightsSource:null,
@@ -51,7 +53,7 @@ export default {
         this.initMap()
     },
     methods:{
-        initMap(){
+         initMap(){
             /*
             * 比例尺dd
             */
@@ -87,18 +89,18 @@ export default {
                 })
             })
             this.tdtMap_cva=new ol.layer.Tile({
-                layerId:'tdtCva',
                 name:'天地图矢量标记图层',
                 source:new ol.source.XYZ({
                     url:'http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04',
                     crossOrigin: 'anonymous',
                     wrapX:false
-                }), 
+                }),
             })
             //实例化Map对象
             this.map= new ol.Map({
                 target:'mapDiv',
                 layers:[this.tdtMap_vec,this.tdtMap_cva],
+
                 view:new ol.View({
                     //地图中心点
                     center:[12606072.0, 2650934.0],
@@ -108,6 +110,7 @@ export default {
     },
     animaShp(){
         this.$refs.closeDiv.hidden=false
+
         let animaShp = new ol.source.Vector({
             wrapX: false
         });
@@ -241,6 +244,7 @@ export default {
     },
     airplineShp(){
         this.$refs.closeDiv.hidden=false
+
         let pointsPerMs=0.1
         this.flightsSource = new ol.source.Vector({
             wrapX: false,
@@ -260,7 +264,6 @@ export default {
                         let arcGenerator = new arc.GreatCircle(
                             { x: from[1], y: from[0] },
                             { x: to[1], y: to[0] })
-
                         let arcLine = arcGenerator.Arc(100, { offset: 10 });
                         if (arcLine.geometries.length === 1) {
                             let line = new ol.geom.LineString(arcLine.geometries[0].coords);
@@ -286,7 +289,6 @@ export default {
                 })
             })
         })
-        // flightsLayer.on('postrender', animateFlights);
         function animateFlights(event) {
             // var vectorContext = getVectorContext(event);
             let vectorContext = ol.render.getVectorContext(event);
@@ -321,6 +323,7 @@ export default {
         this.vectorLayer.getSource().clear()
     },
     addLater(feature, timeout){
+
         let c=this.flightsSource
         let vm=this
         window.setTimeout(function () {
@@ -368,8 +371,10 @@ export default {
         }
 
     }
+},
+
 }
-}
+
 </script>
 <style lang="less" scoped>
 .mapDiv{
