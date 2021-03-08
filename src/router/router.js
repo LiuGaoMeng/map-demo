@@ -107,11 +107,19 @@ export const routerMap =[
     },
     children:[
       {
-        name: 'map',
-        path: 'map',
-        component: () => import(/* webpackChunkName: "about" */ '@/components/Map.vue'),
+        name: 'esriMap',
+        path: 'esriMap',
+        component: () => import(/* webpackChunkName: "about" */ '@/components/Arcmap/map.vue'),
         meta:{
           title:'简单案例'
+        }
+      },
+      {
+        name: 'mapTool',
+        path: 'mapTool',
+        component: () => import(/* webpackChunkName: "about" */ '@/components/Arcmap/mapTool.vue'),
+        meta:{
+          title:'Arcgis工具'
         }
       },
     ]
