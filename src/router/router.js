@@ -119,7 +119,7 @@ export const routerMap =[
         path: 'mapTool',
         component: () => import(/* webpackChunkName: "about" */ '@/components/Arcmap/mapTool.vue'),
         meta:{
-          title:'Arcgis工具'
+          title:'Arcgis图层'
         }
       },
     ]
