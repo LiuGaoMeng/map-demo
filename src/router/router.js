@@ -94,6 +94,15 @@ export const routerMap =[
         meta:{
           title:'动画'
         }
+      },
+      
+      {
+        path: 'topology',
+        name: '拓扑分析',
+        component: () => import(/* webpackChunkName: "about" */ '@/components/topology.vue'),
+        meta:{
+          title:'拓扑分析'
+        }
       }
     ]
   }
