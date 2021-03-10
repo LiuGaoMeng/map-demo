@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2021-03-08 16:05:46
- * @LastEditTime: 2021-03-10 11:53:51
+ * @LastEditTime: 2021-03-10 15:34:58
  * @LastEditors: licheng
  * @Description: In User Settings Edit
  * @FilePath: \map-demo\src\components\Arcmap\mapTool.vue
@@ -17,6 +17,7 @@
       <Button @click="drawPoint">绘制点</Button>
       <Button @click="drawPoliny">绘制线</Button>
       <Button @click="drawPolygon ">绘制面</Button>
+      <Button @click="ranging">测距</Button>
       <Button @click="clear">清除要素</Button>
     </div>
   </div>
@@ -69,7 +70,11 @@ export default {
         'esri/views/draw/Draw',
         'esri/Graphic',
         "esri/layers/GraphicsLayer",
-        "esri/geometry/Polyline"
+        "esri/geometry/Polyline",
+        "esri/symbols/TextSymbol",
+        "esri/tasks/GeometryService",
+        "esri/tasks/support/LengthsParameters",
+        "esri/config"
       ])
         .then(([
           Map,
@@ -78,7 +83,11 @@ export default {
           Draw,
           Graphic,
           GraphicsLayer,
-          Polyline
+          Polyline,
+          TextSymbol,
+          GeometryService,
+          LengthsParameters,
+          esriConfig
         ]) => {
           this.layerDT = new WebTileLayer({
             urlTemplate: 'http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04'
@@ -98,8 +107,12 @@ export default {
           this.Draw = new Draw({
             view: this.MapView
           })
+          esriConfig.fontsUrl = "http://120.79.149.109:12306/arcgis_js_api/library/4.11/4.11/fonts"
+          this.TextSymbol = TextSymbol
           this.Graphic = Graphic
           this.Polyline = Polyline
+          this.GeometryService = GeometryService
+          this.LengthsParameters = LengthsParameters
           let hightLayer = new GraphicsLayer({id : 'hightLayer'});
           this.map.add(hightLayer)
         })
@@ -182,10 +195,17 @@ export default {
       let _this = this
       var action = this.Draw.create("polyline");
       action.on(["cursor-update","draw-complete"],function (evt) {
+        debugger
         _this.clear()
         let Polyline = {
-          type: 'polyline',
-          paths: evt.vertices,
+            type: 'polyline',
+            paths: evt.vertices,
+            spatialReference: _this.MapView.spatialReference
+        }
+        let Point = {
+          type: 'point',
+          x: evt.vertices[evt.vertices.length - 1][0],
+          y: evt.vertices[evt.vertices.length - 1][1],
           spatialReference: _this.MapView.spatialReference
         }
         let graphic = new _this.Graphic({
@@ -198,8 +218,27 @@ export default {
             join: "round"
           }
         })
+        var textSymbol = {
+          type: "text",  // autocasts as new TextSymbol()
+          color: "white",
+          haloColor: "black",
+          haloSize: "1px",
+          text: "双击结束绘制",
+          xoffset: 3,
+          yoffset: 3,
+          font: {  // autocasts as new Font()
+            size: 12,
+            family: "Josefin Slab",
+            weight: "bold"
+          }
+        }
+        let testTip = new _this.Graphic({
+          geometry: Point,
+          symbol: textSymbol
+        })
         let hightLayer = _this.map.findLayerById('hightLayer')
         hightLayer.add(graphic);
+        hightLayer.add(testTip);
       })
     },
     drawPolygon () {
@@ -225,6 +264,63 @@ export default {
         })
         let hightLayer = _this.map.findLayerById('hightLayer')
         hightLayer.add(graphic);
+      })
+    },
+    ranging () {
+      let _this = this
+      var action = this.Draw.create("polyline");
+      action.on(["cursor-update","draw-complete"],function (evt) {
+        _this.clear()
+        let Polyline = {
+            type: 'polyline',
+            paths: evt.vertices,
+            spatialReference: _this.MapView.spatialReference
+        }
+        let graphic = new _this.Graphic({
+          geometry: Polyline,
+          symbol: {
+            type: "simple-line", // autocasts as SimpleLineSymbol
+            color: [4, 90, 141],
+            width: 3,
+            cap: "round",
+            join: "round"
+          }
+        })
+        let hightLayer = _this.map.findLayerById('hightLayer')
+        hightLayer.add(graphic);
+        if (evt.type === 'draw-complete') {
+          let lengths = new _this.GeometryService('http://121.33.231.74:60/arcgis/rest/services/Utilities/Geometry/GeometryServer')
+          let LengthsParameters = new _this.LengthsParameters()
+          LengthsParameters.distanceUnit = 'meters';
+          LengthsParameters.polylines=[Polyline]
+          lengths.lengths(LengthsParameters).then(x => {
+            let Point = {
+              type: 'point',
+              x: evt.vertices[evt.vertices.length - 1][0],
+              y: evt.vertices[evt.vertices.length - 1][1],
+              spatialReference: _this.MapView.spatialReference
+            }
+            var textSymbol = {
+              type: "text",  // autocasts as new TextSymbol()
+              color: "white",
+              haloColor: "black",
+              haloSize: "1px",
+              text: x.lengths + "米",
+              xoffset: 3,
+              yoffset: 3,
+              font: {  // autocasts as new Font()
+                size: 12,
+                family: "Josefin Slab",
+                weight: "bold"
+              }
+            }
+            let testTip = new _this.Graphic({
+              geometry: Point,
+              symbol: textSymbol
+            })
+            hightLayer.add(testTip);
+          })
+        }
       })
     },
     clear () {

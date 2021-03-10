@@ -1,8 +1,8 @@
 <!--
  * @Author: your name
  * @Date: 2021-03-08 16:05:46
- * @LastEditTime: 2021-03-08 16:32:49
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-03-10 12:01:16
+ * @LastEditors: licheng
  * @Description: In User Settings Edit
  * @FilePath: \map-demo\src\components\Arcmap\map.vue
 -->
@@ -25,7 +25,7 @@ export default {
   },
   methods: {
     initMap() {
-      loadCss('https://js.arcgis.com/4.18/esri/themes/light/main.css')
+      // loadCss('https://js.arcgis.com/4.18/esri/themes/light/main.css')
       loadModules([
         "esri/Map", 
         "esri/views/MapView",//2d视图模块
