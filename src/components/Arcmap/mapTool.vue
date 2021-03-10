@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2021-03-08 16:05:46
- * @LastEditTime: 2021-03-09 17:59:37
+ * @LastEditTime: 2021-03-10 10:05:06
  * @LastEditors: licheng
  * @Description: In User Settings Edit
  * @FilePath: \map-demo\src\components\Arcmap\mapTool.vue
@@ -16,6 +16,7 @@
       <Button @click="HeatmapRenderer">热力图</Button>
       <Button @click="drawPoint">绘制点</Button>
       <Button @click="drawPoliny">绘制线</Button>
+      <Button @click="drawPolygon ">绘制面</Button>
       <Button @click="clear">清除要素</Button>
     </div>
   </div>
@@ -61,7 +62,7 @@ export default {
   methods: {
     initMap () {
       let _this = this
-      loadCss('https://js.arcgis.com/4.18/esri/themes/light/main.css')
+      // loadCss('https://js.arcgis.com/4.18/esri/themes/light/main.css')
       loadModules([
         'esri/Map',
         'esri/views/MapView', // 2d视图模块
@@ -99,7 +100,7 @@ export default {
             zoom: 10,
             center: [113.272579, 23.136134]
           })
-           _this.Draw = new Draw({
+          _this.Draw = new Draw({
             view: _this.MapView
           })
           _this.Graphic = Graphic
@@ -199,6 +200,31 @@ export default {
             width: 3,
             cap: "round",
             join: "round"
+          }
+        })
+        let hightLayer = _this.map.findLayerById('hightLayer')
+        hightLayer.add(graphic);
+      })
+    },
+    drawPolygon () {
+      let _this = this
+      var action = this.Draw.create("polygon");
+      action.on(["cursor-update","draw-complete"],function (evt) {
+        _this.clear()
+        let polygon = {
+          type: 'polygon',
+          rings: evt.vertices,
+          spatialReference: _this.MapView.spatialReference
+        }
+        let graphic = new _this.Graphic({
+          geometry: polygon,
+          symbol: {
+            type: "simple-fill",
+            color: [227, 139, 79, 0.8],  // Orange, opacity 80%
+            outline: {
+                color: [255, 255, 0],
+                width: 1
+            }
           }
         })
         let hightLayer = _this.map.findLayerById('hightLayer')
