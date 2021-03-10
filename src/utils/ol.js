@@ -17,6 +17,7 @@ import { buffer } from 'ol/extent'
 import {getArea, getLength} from 'ol/sphere'
 import  * as renderJs from 'ol/render'
 import * as olEasing from 'ol/easing'
+import * as olfilter from 'ol/format/filter'
 const ol = {
   View: View,
   Map: Map,
@@ -40,6 +41,7 @@ const ol = {
     WFS: WFS,
     GeoJSON: GeoJSON,
     Polyline:Polyline,
+    filter:olfilter,
     KML:KML
   },
   geom: {
