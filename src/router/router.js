@@ -96,14 +96,14 @@ export const routerMap =[
         }
       },
       
-      {
-        path: 'topology',
-        name: '拓扑分析',
-        component: () => import(/* webpackChunkName: "about" */ '@/components/topology.vue'),
-        meta:{
-          title:'拓扑分析'
-        }
-      }
+      // {
+      //   path: 'topology',
+      //   name: '拓扑分析',
+      //   component: () => import(/* webpackChunkName: "about" */ '@/components/topology.vue'),
+      //   meta:{
+      //     title:'拓扑分析'
+      //   }
+      // }
     ]
   }
   ,

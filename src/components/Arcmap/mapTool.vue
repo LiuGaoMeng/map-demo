@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2021-03-08 16:05:46
- * @LastEditTime: 2021-03-10 10:05:06
+ * @LastEditTime: 2021-03-10 11:53:51
  * @LastEditors: licheng
  * @Description: In User Settings Edit
  * @FilePath: \map-demo\src\components\Arcmap\mapTool.vue
@@ -61,14 +61,11 @@ export default {
   },
   methods: {
     initMap () {
-      let _this = this
       // loadCss('https://js.arcgis.com/4.18/esri/themes/light/main.css')
       loadModules([
         'esri/Map',
         'esri/views/MapView', // 2d视图模块
         'esri/layers/WebTileLayer',
-        'esri/renderers/HeatmapRenderer',
-        'esri/layers/KMLLayer',
         'esri/views/draw/Draw',
         'esri/Graphic',
         "esri/layers/GraphicsLayer",
@@ -78,39 +75,36 @@ export default {
           Map,
           MapView,
           WebTileLayer,
-          HeatmapRenderer,
-          KMLLayer,
           Draw,
           Graphic,
           GraphicsLayer,
           Polyline
         ]) => {
-          _this.layerDT = new WebTileLayer({
+          this.layerDT = new WebTileLayer({
             urlTemplate: 'http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04'
           })
-          _this.layerZJ = new WebTileLayer({
+          this.layerZJ = new WebTileLayer({
             urlTemplate: 'http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04'
           })
-          _this.map = new Map({
+          this.map = new Map({
             layers: [this.layerDT, this.layerZJ]
           })
-          _this.MapView = new MapView({
+          this.MapView = new MapView({
             container: 'mapDivRef',
             map: this.map,
             zoom: 10,
             center: [113.272579, 23.136134]
           })
-          _this.Draw = new Draw({
-            view: _this.MapView
+          this.Draw = new Draw({
+            view: this.MapView
           })
-          _this.Graphic = Graphic
-          _this.Polyline = Polyline
+          this.Graphic = Graphic
+          this.Polyline = Polyline
           let hightLayer = new GraphicsLayer({id : 'hightLayer'});
-          _this.map.add(hightLayer)
+          this.map.add(hightLayer)
         })
     },
     HeatmapRenderer () {
-      let _this = this
       loadModules([
         'esri/renderers/HeatmapRenderer',
         'esri/layers/FeatureLayer'
@@ -132,9 +126,9 @@ export default {
           })
 
           let features = []
-          for (var i = 0; i < _this.heatData.length; i++) {
-            var x = _this.heatData[i].lng
-            var y = _this.heatData[i].lat
+          for (var i = 0; i < this.heatData.length; i++) {
+            var x = this.heatData[i].lng
+            var y = this.heatData[i].lat
             features.push({
               geometry: {
                 type: 'point',
@@ -148,38 +142,40 @@ export default {
           }
 
           let Layer = new FeatureLayer({
+            id: 'heatmapLayer',
             source: features,
             title: '热力图',
             objectIdField: 'ObjectID',
             renderer: heatmapRenderer// 渲染器
           })
-          _this.map.add(Layer)
+          this.map.add(Layer)
         })
     },
     drawPoint () {
-      let _this = this
-      this.pointAction = this.Draw.create('point',{mode: "click"})
-      this.pointAction.on('draw-complete', (evt) => {
-        let point = {
-          type: "point",
-          x: evt.coordinates[0],
-          y: evt.coordinates[1],
-          spatialReference: _this.MapView.spatialReference
-        }
-        let graphic = new _this.Graphic({
-          geometry: point,
-          symbol: {
-            type: "simple-marker",
-            color: "#87CEFA",
-            size: "16px",
-            outline: {
-              color: [255, 255, 0],
-              width: 3
-            }
+      this.MapViewEvent = this.MapView.on('click',x => {
+        this.pointAction = this.Draw.create('point',{mode: "click"})
+        this.pointAction.on('draw-complete', (evt) => {
+          let point = {
+            type: "point",
+            x: evt.coordinates[0],
+            y: evt.coordinates[1],
+            spatialReference: this.MapView.spatialReference
           }
-        });
-        let hightLayer = _this.map.findLayerById('hightLayer')
-        hightLayer.add(graphic);
+          let graphic = new this.Graphic({
+            geometry: point,
+            symbol: {
+              type: "simple-marker",
+              color: "#87CEFA",
+              size: "16px",
+              outline: {
+                color: [255, 255, 0],
+                width: 3
+              }
+            }
+          });
+          let hightLayer = this.map.findLayerById('hightLayer')
+          hightLayer.add(graphic);
+        })
       })
     },
     drawPoliny () {
@@ -232,7 +228,9 @@ export default {
       })
     },
     clear () {
+      if (this.MapViewEvent) this.MapViewEvent.remove()
       this.map.findLayerById('hightLayer').removeAll()
+      if (this.map.findLayerById('heatmapLayer')) this.map.remove(this.map.findLayerById('heatmapLayer')  )
     }
   }
 }
