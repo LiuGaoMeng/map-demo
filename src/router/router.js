@@ -131,6 +131,14 @@ export const routerMap =[
           title:'Arcgis图层'
         }
       },
+      {
+        name: 'Swipe',
+        path: 'Swipe',
+        component: () => import(/* webpackChunkName: "about" */ '@/components/Arcmap/Swipe.vue'),
+        meta:{
+          title:'Arcgis卷帘'
+        }
+      },
     ]
   }
 ]
