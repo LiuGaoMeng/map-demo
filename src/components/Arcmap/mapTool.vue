@@ -1,23 +1,39 @@
 <!--
  * @Author: your name
  * @Date: 2021-03-08 16:05:46
- * @LastEditTime: 2021-03-10 15:34:58
+ * @LastEditTime: 2021-03-26 18:01:33
  * @LastEditors: licheng
  * @Description: In User Settings Edit
  * @FilePath: \map-demo\src\components\Arcmap\mapTool.vue
 -->
 <template>
   <div class='mapDiv'>
+    <div class="layerTree-card">
+      <el-card class="box-card">
+        <h4>图层列表</h4>
+        <el-checkbox-group v-model="checkedlist">
+          <el-checkbox v-for="item in list" :label="item.name" :key="item.name" @change="layerControl(item)">{{item.name}}</el-checkbox>
+        </el-checkbox-group>
+      </el-card>
+    </div>
     <div id='mapDivRef' class='mapDiv'></div>
     <div class="anima-div">
-      <!-- <Button @click="animaShp">要素动画</Button>
-            <Button @click="moveShp">要素移动</Button>
-            <Button @click="airplineShp">航线动画</Button> -->
+      <el-dropdown>
+        <Button class="el-dropdown-link">
+            绘制<i class="el-icon-arrow-down el-icon--right"></i>
+        </Button>
+        <el-dropdown-menu size="small" slot="dropdown" @click="handleClick">
+          <el-dropdown-item @click.native="drawPoint">绘制点</el-dropdown-item>
+          <el-dropdown-item @click.native="drawPoliny">绘制线</el-dropdown-item>
+          <el-dropdown-item @click.native="drawPolygon">绘制面</el-dropdown-item>
+          <el-dropdown-item @click.native="ranging">测距</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
       <Button @click="HeatmapRenderer">热力图</Button>
-      <Button @click="drawPoint">绘制点</Button>
+      <!-- <Button @click="drawPoint">绘制点</Button>
       <Button @click="drawPoliny">绘制线</Button>
-      <Button @click="drawPolygon ">绘制面</Button>
-      <Button @click="ranging">测距</Button>
+      <Button @click="drawPolygon">绘制面</Button>
+      <Button @click="ranging">测距</Button> -->
       <Button @click="clear">清除要素</Button>
     </div>
   </div>
@@ -29,6 +45,8 @@ export default {
   name: 'mapTool',
   data () {
     return {
+      checkedlist: [],
+      list: [],
       heatData: [
         { 'lng': '113.241533', 'lat': '23.174944' },
         { 'lng': '113.295845', 'lat': '23.169628' },
@@ -90,14 +108,27 @@ export default {
           esriConfig
         ]) => {
           this.layerDT = new WebTileLayer({
+            name:"天地图底图",
             urlTemplate: 'http://t0.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04'
           })
           this.layerZJ = new WebTileLayer({
+            name:"天地图注记",
             urlTemplate: 'http://t0.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04'
           })
-          this.map = new Map({
-            layers: [this.layerDT, this.layerZJ]
+          this.layerYX = new WebTileLayer({
+            name:"天地图影像",
+            visible:false,
+            urlTemplate: 'http://t0.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04'
           })
+          this.layerYXZJ = new WebTileLayer({
+            name:"天地图影像注记",
+            visible:false,
+            urlTemplate: 'http://t0.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=42dca576db031641be0524ee977ddd04 '
+          })
+          this.map = new Map({
+            layers: [this.layerDT, this.layerZJ, this.layerYX, this.layerYXZJ]
+          })
+          this.InitLayerTree()
           this.MapView = new MapView({
             container: 'mapDivRef',
             map: this.map,
@@ -156,7 +187,8 @@ export default {
 
           let Layer = new FeatureLayer({
             id: 'heatmapLayer',
-            source: features,
+            // source: features,
+            url:"http://172.26.40.225:6080/arcgis/rest/services/MapDemo/heatPoint/FeatureServer/0",
             title: '热力图',
             objectIdField: 'ObjectID',
             renderer: heatmapRenderer// 渲染器
@@ -327,6 +359,18 @@ export default {
       if (this.MapViewEvent) this.MapViewEvent.remove()
       this.map.findLayerById('hightLayer').removeAll()
       if (this.map.findLayerById('heatmapLayer')) this.map.remove(this.map.findLayerById('heatmapLayer')  )
+    },
+    //初始化图层列表
+    InitLayerTree() {
+      this.map.layers.items.map(x => {
+        if (x.visible) {
+          this.checkedlist.push(x.name)
+        }
+        this.list.push(x)
+      })
+    },
+    layerControl (layer) {
+      layer.visible = !layer.visible
     }
   }
 }
@@ -339,6 +383,14 @@ export default {
     position: absolute;
     top: 5px;
     left: 40%;
+  }
+  .layerTree-card {
+    width: 250px;
+    display: inline-block;
+    position: absolute;
+    z-index: 999;
+    right: 10px;
+    top: 10px;
   }
 }
 </style>
